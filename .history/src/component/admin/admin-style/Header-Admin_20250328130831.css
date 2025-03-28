@@ -1,0 +1,103 @@
+/* src/components/Header.css */
+.header {
+  width: calc(100% - 250px); /* Adjust for sidebar width */
+  height: 60px;
+  background: #fff; /* White background */
+  position: fixed;
+  top: 0;
+  left: 250px; /* Offset for sidebar */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+/* Thanh tìm kiếm */
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.05); /* Light gray background */
+  border-radius: 20px;
+  padding: 5px 10px;
+  width: 300px;
+}
+
+.search-bar input {
+  border: none;
+  background: none;
+  outline: none;
+  margin-left: 10px;
+  width: 100%;
+  color: #333; /* Black text */
+}
+
+.search-bar input::placeholder {
+  color: rgba(0, 0, 0, 0.5); /* Gray placeholder */
+}
+
+.search-icon {
+  color: #333; /* Black icon */
+}
+
+/* Phần bên phải */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Space between notification and logout */
+}
+
+.notification-icon {
+  font-size: 20px;
+  color: #333; /* Black icon */
+  cursor: pointer;
+}
+
+.notification-icon:hover {
+  color: #007bff; /* Blue on hover */
+}
+
+.logout-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  background-color: rgba(0, 0, 0, 0.05); /* Light gray background */
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-section:hover {
+  background-color: rgba(0, 0, 0, 0.1); /* Slightly darker on hover */
+}
+
+.logout-icon {
+  font-size: 18px;
+  color: #333; /* Black icon */
+}
+
+.logout-section span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333; /* Black text */
+}
+.header {
+  width: calc(100% - 250px);
+  height: 60px;
+  background: #fff;
+  position: fixed;
+  top: 0;
+  left: 250px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000; /* Đảm bảo header hiển thị trên tất cả */
+}
+
+/* Đảm bảo phần nội dung bên dưới không bị đè lên */
+.main-content {
+  margin-top: 80px; /* Để khoảng trống phía trên, tránh header đè lên */
+}

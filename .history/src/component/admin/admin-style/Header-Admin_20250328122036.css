@@ -1,0 +1,68 @@
+/* src/components/Header.css */
+.header {
+  width: calc(100% - 250px); /* Adjust for sidebar width */
+  height: 60px;
+  background: #fff; /* White background */
+  position: fixed;
+  top: 0;
+  left: 250px; /* Offset for sidebar */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header .logo-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.header .logo span {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333; /* Black text */
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.logout-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  background-color: rgba(0, 0, 0, 0.05); /* Light gray background */
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-section:hover {
+  background-color: rgba(0, 0, 0, 0.1); /* Slightly darker on hover */
+}
+
+.logout-icon {
+  font-size: 18px;
+  color: #333; /* Black icon */
+}
+
+.logout-section span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333; /* Black text */
+}

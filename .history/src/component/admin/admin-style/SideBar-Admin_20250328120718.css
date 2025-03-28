@@ -1,0 +1,96 @@
+/* src/components/Sidebar.css */
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background: linear-gradient(
+    180deg,
+    #1428a0 0%,
+    #00ddeb 100%
+  ); /* Gradient của Samsung */
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sidebar .logo {
+  font-size: 24px;
+  font-weight: 700;
+  padding: 20px 25px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .logo i {
+  font-size: 28px;
+}
+
+.sidebar ul {
+  list-style: none;
+  margin-top: 10px;
+  flex-grow: 1;
+}
+
+.sidebar ul li {
+  padding: 12px 25px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, padding-left 0.3s ease;
+}
+
+.sidebar ul li:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding-left: 30px;
+}
+
+.sidebar ul li.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-left: 4px solid #fff;
+  padding-left: 21px;
+}
+
+.sidebar ul li a {
+  color: #fff;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.sidebar ul li a i {
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+/* Upgrade Section */
+.upgrade-section {
+  padding: 20px 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+
+.upgrade-section:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.upgrade-icon {
+  font-size: 20px;
+}
+
+.upgrade-section span {
+  font-size: 14px;
+  font-weight: 500;
+}

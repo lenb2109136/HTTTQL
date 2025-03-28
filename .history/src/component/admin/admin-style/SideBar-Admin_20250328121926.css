@@ -1,0 +1,114 @@
+/* src/components/Sidebar.css */
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background: #fff; /* White background */
+  color: #333; /* Dark text color */
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.sidebar .logo {
+  font-size: 24px;
+  font-weight: 700;
+  padding: 20px 25px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* Light border */
+}
+
+.sidebar .logo i {
+  font-size: 28px;
+  color: #333;
+}
+
+.sidebar ul {
+  list-style: none;
+  margin-top: 10px;
+  flex-grow: 1;
+}
+
+.sidebar ul li {
+  padding: 12px 25px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, padding-left 0.3s ease;
+  position: relative; /* For badge positioning */
+}
+
+.sidebar ul li:hover {
+  background-color: rgba(0, 0, 0, 0.05); /* Light gray hover effect */
+  padding-left: 30px;
+}
+
+.sidebar ul li.active {
+  background-color: rgba(0, 0, 0, 0.1); /* Slightly darker for active state */
+  border-left: 4px solid #007bff; /* Blue accent for active item */
+  padding-left: 21px;
+}
+
+.sidebar ul li a {
+  color: #333; /* Black text */
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.sidebar ul li a i {
+  margin-right: 12px;
+  font-size: 18px;
+  color: #333; /* Black icons */
+}
+
+/* Notification Badge */
+.sidebar ul li .badge {
+  position: absolute;
+  right: 25px;
+  background-color: #ff4d4f; /* Red badge */
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Upgrade Section */
+.upgrade-section {
+  padding: 20px 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(0, 0, 0, 0.05); /* Light gray background */
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.upgrade-section:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.upgrade-icon {
+  font-size: 20px;
+  color: #333;
+}
+
+.upgrade-section span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}

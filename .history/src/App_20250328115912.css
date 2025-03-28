@@ -1,0 +1,113 @@
+/* src/App.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', Arial, sans-serif; /* Sử dụng font hiện đại hơn */
+}
+
+.app {
+  display: flex;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 250px;
+  background-color: #f5f6fa;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background-color: #1a2a44; /* Màu nền tối, chuyên nghiệp */
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-top: 20px;
+  transition: all 0.3s ease; /* Hiệu ứng mượt mà khi thay đổi */
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1); /* Thêm bóng nhẹ */
+}
+
+.sidebar .logo {
+  font-size: 24px;
+  font-weight: 700;
+  padding: 20px 25px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Đường viền nhẹ */
+}
+
+.sidebar .logo i {
+  font-size: 28px;
+}
+
+.sidebar ul {
+  list-style: none;
+  margin-top: 10px;
+}
+
+.sidebar ul li {
+  padding: 12px 25px; /* Giảm padding để trông gọn gàng hơn */
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, padding-left 0.3s ease; /* Hiệu ứng mượt mà */
+}
+
+.sidebar ul li:hover {
+  background-color: #2a3b5a; /* Màu hover sáng hơn một chút */
+  padding-left: 30px; /* Hiệu ứng dịch chuyển nhẹ khi hover */
+}
+
+.sidebar ul li.active {
+  background-color: #3b5998; /* Màu nền khi mục được chọn */
+  border-left: 4px solid #4a90e2; /* Đường viền bên trái để làm nổi bật */
+  padding-left: 21px; /* Điều chỉnh padding để cân đối với border */
+}
+
+.sidebar ul li a {
+  color: #d1d5db; /* Màu chữ nhạt hơn cho trạng thái bình thường */
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.sidebar ul li a:hover,
+.sidebar ul li.active a {
+  color: #fff; /* Màu chữ trắng khi hover hoặc active */
+}
+
+.sidebar ul li a i {
+  margin-right: 12px;
+  font-size: 18px;
+  color: #9ca3af; /* Màu biểu tượng nhạt hơn */
+  transition: color 0.3s ease;
+}
+
+.sidebar ul li a:hover i,
+.sidebar ul li.active a i {
+  color: #fff; /* Màu biểu tượng trắng khi hover hoặc active */
+}
+
+/* Header */
+.header {
+  background-color: #fff;
+  padding: 15px 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Page Content */
+.page-content {
+  padding: 20px;
+}
