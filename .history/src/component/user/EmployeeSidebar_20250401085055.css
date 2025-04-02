@@ -1,0 +1,75 @@
+/* EmployeeSidebar.css */
+
+/* Sidebar Container */
+.employee-sidebar {
+  width: 250px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  padding-top: 20px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: box-shadow 0.3s ease;
+  border-radius: 0 8px 0 0; /* Bo góc nhẹ ở trên bên phải */
+}
+
+.employee-sidebar:hover {
+  box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Logo Section */
+.sidebar-logo {
+  padding: 15px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.sidebar-logo img {
+  height: 40px;
+  width: auto;
+}
+
+/* Navigation Styles */
+.nav-sidebar {
+  padding: 0 10px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: #000000; /* Màu đen cho chữ */
+  font-size: 16px; /* Tăng kích thước chữ */
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 6px; /* Bo góc cho mỗi item */
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background-color: rgba(0, 123, 255, 0.1);
+  color: #007bff;
+}
+
+.nav-icon {
+  font-size: 18px;
+  color: #007bff;
+  margin-right: 12px;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover .nav-icon,
+.nav-link.active .nav-icon {
+  color: #007bff;
+}
+
+.nav-text {
+  font-size: 16px;
+  font-weight: 500;
+}
