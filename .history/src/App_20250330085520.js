@@ -1,0 +1,28 @@
+// src/App.js
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.css';
+import Header from './component/admin/Header-Admin';
+import Sidebar from './component/admin/SideBar';
+import Dashboard from './component/admin/Dashboard';
+import Employee from './component/admin/EmployeesPages';
+
+function App() {
+  return (
+    <Router>
+      <div className="app">
+        <Sidebar />
+        <div className="main-content">
+          <Header />
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="employees" element={<Employee />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
+  );
+}
+
+export default App;

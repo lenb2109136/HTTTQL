@@ -1,0 +1,122 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f7fa; /* Nền trắng nhẹ để làm nổi bật container */
+}
+
+.login-container {
+  max-width: 600px; /* Giới hạn chiều rộng container */
+  padding: 20px;
+  background: linear-gradient(
+    135deg,
+    #005eb8 0%,
+    #00c7b7 30%
+  ); /* Gradient nhỏ hơn */
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.login-card {
+  border-radius: 20px;
+  background: #ffffff;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.login-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+.login-logo {
+  width: 120px;
+  height: auto;
+  filter: brightness(0) invert(1); /* Đổi logo thành màu trắng để nổi bật trên nền gradient */
+}
+
+.login-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff; /* Màu trắng để nổi bật trên nền gradient */
+  font-family: 'SamsungOne', sans-serif;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  color: #6c757d;
+  font-size: 1.2rem;
+}
+
+.custom-input {
+  border-radius: 50px !important;
+  padding-left: 45px !important;
+  border: 1px solid #e0e0e0 !important;
+  height: 48px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+}
+
+.custom-input:focus {
+  border-color: #005eb8 !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 94, 184, 0.25) !important;
+}
+
+.login-button {
+  background: #ffffff !important; /* Nút trắng nổi bật */
+  border: none !important;
+  border-radius: 50px !important;
+  padding: 12px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #005eb8 !important; /* Chữ màu xanh chủ đạo */
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.login-button:hover {
+  background: #005eb8 !important;
+  color: #ffffff !important; /* Chữ trắng khi hover */
+}
+
+.forgot-password {
+  text-decoration: none;
+  font-size: 0.9rem;
+  color: #ffffff; /* Màu trắng để nổi bật */
+  transition: opacity 0.3s ease;
+}
+
+.forgot-password:hover {
+  opacity: 0.8;
+  color: #ffffff !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .login-container {
+    max-width: 90%;
+    padding: 15px;
+  }
+
+  .login-card {
+    margin: 0 10px;
+  }
+
+  .login-title {
+    font-size: 1.5rem;
+  }
+
+  .login-logo {
+    width: 100px;
+  }
+}

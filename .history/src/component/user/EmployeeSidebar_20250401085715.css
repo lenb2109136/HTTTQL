@@ -1,0 +1,157 @@
+/* EmployeeSidebar.css */
+
+/* Sidebar Container */
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background: #fff;
+  color: #333;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo Section */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 25px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* Menu Items */
+.sidebar-menu {
+  list-style: none;
+  margin-top: 10px;
+  flex-grow: 1;
+  padding: 0;
+}
+
+.sidebar-menu li {
+  padding: 12px 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background-color 0.3s ease, padding-left 0.3s ease;
+}
+
+.sidebar-menu li:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding-left: 30px;
+}
+
+.sidebar-menu li.active {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #007bff;
+  padding-left: 21px;
+}
+
+.sidebar-menu a {
+  color: #333;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  font-size: 18px; /* Giữ nguyên kích thước hiện tại */
+  font-weight: 500;
+  width: 100%;
+  gap: 20px; /* Tăng khoảng cách giữa text và chevron */
+}
+
+.menu-icon {
+  font-size: 20px;
+  color: #333;
+  margin-right: 15px; /* Giữ khoảng cách giữa icon và text */
+  transition: color 0.3s ease;
+}
+
+.sidebar-menu a:hover .menu-icon {
+  color: #007bff;
+}
+
+.menu-text {
+  font-size: 20px; /* Tăng kích thước chữ lên 20px */
+  font-weight: 500;
+  flex-grow: 1; /* Đảm bảo text chiếm phần lớn không gian */
+}
+
+.chevron-icon {
+  font-size: 18px;
+  color: rgba(0, 0, 0, 0.5);
+  transition: color 0.3s ease;
+}
+
+.sidebar-menu li:hover .chevron-icon {
+  color: #007bff;
+}
+
+.sidebar-menu li.active .chevron-icon {
+  color: #007bff;
+}
+
+/* Logout Section */
+.logout-section {
+  padding: 20px 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-section:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.logout-link {
+  color: #333;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 500;
+  width: 100%;
+  gap: 20px; /* Tăng khoảng cách giữa text và chevron */
+}
+
+.logout-icon {
+  font-size: 20px;
+  color: #333;
+  margin-right: 15px;
+  transition: color 0.3s ease;
+}
+
+.logout-section:hover .logout-icon {
+  color: #007bff;
+}
+
+.logout-text {
+  font-size: 16px; /* Giữ nguyên kích thước logout text */
+  font-weight: 500;
+  color: #333;
+  flex-grow: 1; /* Đảm bảo text chiếm phần lớn không gian */
+}
+
+.logout-section:hover .chevron-icon {
+  color: #007bff;
+}

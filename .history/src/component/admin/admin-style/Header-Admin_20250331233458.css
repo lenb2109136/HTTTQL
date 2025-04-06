@@ -1,0 +1,224 @@
+/* Header chính */
+.header {
+  width: calc(100% - 250px); /* Điều chỉnh cho phù hợp với sidebar */
+  height: 60px;
+  background: #fff; /* Nền trắng */
+  position: fixed;
+  top: 0;
+  left: 250px; /* Offset cho sidebar */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Bóng nhẹ */
+  z-index: 1000; /* Đảm bảo header hiển thị trên tất cả */
+}
+
+/* Đảm bảo phần nội dung bên dưới không bị đè */
+.main-content {
+  margin-top: 60px; /* Để khoảng trống phía trên */
+}
+
+/* Thanh tìm kiếm */
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.05); /* Nền xám nhạt */
+  border-radius: 20px;
+  padding: 5px 10px;
+  width: 300px;
+}
+
+.search-bar input {
+  border: none;
+  background: none;
+  outline: none;
+  margin-left: 10px;
+  width: 100%;
+  color: #333; /* Màu chữ đen */
+}
+
+.search-bar input::placeholder {
+  color: rgba(0, 0, 0, 0.5); /* Placeholder xám */
+}
+
+.search-icon {
+  color: #333; /* Icon đen */
+}
+
+/* Phần bên phải */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Khoảng cách giữa các phần tử */
+}
+
+.current-date-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+  background: rgba(0, 123, 255, 0.1); /* Nền xanh nhạt */
+  padding: 6px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s ease;
+}
+
+.current-date-time:hover {
+  background: rgba(0, 123, 255, 0.2); /* Nền đậm hơn khi hover */
+}
+
+.current-date-time .clock-icon {
+  font-size: 18px;
+  color: #007bff;
+}
+
+.notification-icon {
+  font-size: 20px;
+  color: #333;
+  cursor: pointer;
+}
+
+.notification-icon:hover {
+  color: #007bff; /* Màu xanh khi hover */
+}
+
+/* Nút chuyển chế độ sáng/tối */
+.theme-toggle {
+  width: 50px;
+  height: 24px;
+  background: #ccc;
+  border-radius: 50px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.toggle-btn {
+  width: 100%;
+  height: 100%;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  transition: background 0.3s ease;
+  position: relative;
+}
+
+.toggle-circle {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-icon {
+  font-size: 14px;
+  color: #333;
+}
+
+.toggle-btn.dark {
+  background: #333;
+}
+
+.toggle-btn.dark .toggle-circle {
+  transform: translateX(26px);
+}
+
+.toggle-btn.dark .theme-icon {
+  color: yellow;
+}
+
+.toggle-btn.light {
+  background: #ccc;
+}
+
+.toggle-btn.light .toggle-circle {
+  transform: translateX(2px);
+}
+
+.toggle-btn.light .theme-icon {
+  color: #ffcc00;
+}
+
+/* Phần avatar và menu dropdown */
+.profile-section {
+  position: relative;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 35px; /* Giảm kích thước xuống 35px để vừa mắt hơn */
+  height: 35px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #ddd;
+  transition: transform 0.2s ease;
+}
+
+.avatar:hover {
+  transform: scale(1.1); /* Phóng to nhẹ khi hover */
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-menu {
+  position: absolute;
+  top: 45px; /* Điều chỉnh vị trí để sát avatar */
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px; /* Bo góc đẹp hơn */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Bóng đổ tinh tế */
+  z-index: 1000;
+  min-width: 180px;
+  animation: fadeIn 0.2s ease-in; /* Hiệu ứng fade in */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu-item {
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: #333;
+  font-size: 14px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.menu-item:hover {
+  background-color: #f0f0f0; /* Nền xám nhạt khi hover */
+  color: #007bff; /* Màu chữ xanh khi hover */
+}
+
+.menu-icon {
+  color: #666;
+  font-size: 16px;
+}
+
+.menu-item:hover .menu-icon {
+  color: #007bff; /* Icon đổi màu khi hover */
+}

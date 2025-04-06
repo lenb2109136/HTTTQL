@@ -1,0 +1,194 @@
+/* Sidebar chính */
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background: #fff;
+  color: #333;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  transition: all 0.3s ease; /* Hiệu ứng mượt mà khi co giãn */
+}
+
+/* Logo hoặc tiêu đề */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 25px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: 18px;
+  font-weight: 700;
+  color: #007bff;
+  transition: opacity 0.3s ease;
+}
+
+.logo:hover {
+  opacity: 0.9;
+}
+
+/* Menu sidebar */
+.sidebar-menu {
+  list-style: none;
+  margin-top: 10px;
+  flex-grow: 1;
+  padding: 0;
+}
+
+.sidebar-item {
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease; /* Hiệu ứng mượt mà cho hover và active */
+  position: relative;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.sidebar-item:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+  color: #007bff;
+  transform: translateX(5px); /* Dịch nhẹ sang phải khi hover */
+}
+
+.sidebar-item.active {
+  background-color: #007bff;
+  color: white;
+  font-weight: 600;
+  border-left: 4px solid #0056b3;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1); /* Bóng nhẹ bên trong */
+}
+
+.menu-icon {
+  font-size: 20px;
+  color: inherit;
+  margin-right: 12px;
+  transition: all 0.3s ease;
+}
+
+.menu-text {
+  flex-grow: 1;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.chevron-icon {
+  font-size: 16px;
+  color: rgba(0, 0, 0, 0.5);
+  margin-left: 10px; /* Khoảng cách cố định */
+  transition: all 0.3s ease;
+}
+
+.sidebar-item:hover .chevron-icon,
+.sidebar-item.active .chevron-icon {
+  color: #007bff;
+  transform: scale(1.1); /* Phóng to nhẹ khi hover/active */
+}
+
+/* Notification Badge */
+.badge {
+  position: absolute;
+  right: 20px;
+  background-color: #ff4d4f;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 1.5s infinite;
+  transition: all 0.3s ease;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Logout Section */
+.logout-section {
+  padding: 15px 25px;
+  display: flex;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-section:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  transform: translateX(5px); /* Dịch nhẹ khi hover */
+}
+
+.logout-link {
+  color: #333;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.logout-link:hover {
+  color: #007bff;
+}
+
+.menu-icon,
+.logout-icon {
+  font-size: 20px;
+  color: inherit;
+  margin-right: 12px;
+  transition: all 0.3s ease;
+}
+
+.logout-link:hover .menu-icon,
+.logout-link:hover .logout-icon {
+  color: #007bff;
+  transform: rotate(10deg); /* Xoay nhẹ icon khi hover */
+}
+
+.logout-link .menu-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80px;
+    padding-top: 60px;
+  }
+
+  .sidebar .logo,
+  .menu-text,
+  .chevron-icon {
+    display: none;
+  }
+
+  .sidebar-item {
+    justify-content: center;
+    padding: 15px;
+  }
+
+  .sidebar-menu .badge {
+    right: 15px;
+  }
+}

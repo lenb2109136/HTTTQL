@@ -1,0 +1,65 @@
+/* EmployeeSidebar.css */
+
+/* Sidebar Container */
+.employee-sidebar {
+  width: 250px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  padding-top: 20px; /* Giảm padding để logo vừa với header */
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: box-shadow 0.3s ease;
+}
+
+.employee-sidebar:hover {
+  box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Logo Section */
+.sidebar-logo {
+  padding: 10px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 10px;
+}
+
+.sidebar-logo img {
+  height: 40px;
+  width: auto;
+}
+
+/* Navigation Links */
+.nav {
+  flex-direction: column;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: #000000; /* Màu đen cho chữ */
+  font-size: 16px; /* Tăng kích thước chữ */
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background-color: rgba(0, 123, 255, 0.1);
+  color: #007bff;
+}
+
+.nav-link .fi {
+  font-size: 18px;
+  color: #007bff;
+  margin-right: 12px;
+}
+
+.nav-link:hover .fi,
+.nav-link.active .fi {
+  color: #007bff;
+}
