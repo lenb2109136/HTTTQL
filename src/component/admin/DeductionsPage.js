@@ -62,11 +62,10 @@ const EmployeesPage = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Add logic to save the new deduction to the backend
         axios.post('http://localhost:8080/khautru/add', newDeduction)
             .then((response) => {
                 setkhautruthuongnien((prev) => [...prev, response.data]);
-                setShowModal(false); // Close modal after submission
+                setShowModal(false);
             })
             .catch((error) => {
                 console.error('Error adding deduction:', error);
@@ -389,25 +388,30 @@ const EmployeesPage = () => {
                 <Modal.Body>
                     <Form onSubmit={(e) => {
                         e.preventDefault();
-                        const newDeductionObject = {
-                            kt_THUONGNIEN: newDeduction.kt_THUONGNIEN,
-                            kt_SOTIEN: parseFloat(newDeduction.kt_SOTIEN),
-                            kt_LOAITIENKHAUTRU: newDeduction.kt_LOAITIENKHAUTRU,
-                            kt_DIENGIAI: newDeduction.kt_DIENGIAI,
-                        };
-                        axios.post(`http://localhost:8080/khautru/create`, newDeduction).then(() => {
-                            alert("Thêm khấu trừ thành công")
+                        console.log(khautruchon.current)
+                       
+                        axios.post(
+                            `http://localhost:8080/khautru/update`,
+                            khautruchon.current,
+                            {
+                              headers: {
+                                'Content-Type': 'application/json'
+                              }
+                            }
+                          ).then(() => {
+                            alert("Cập nhật thành công")
                             setload(!load)
-                        }).catch(() => {
+                          }).catch(() => {
                             alert("Tạo khấu trừ thất bại")
-                        })
+                          })
+                          
                     }}>
                         <Form.Group className="mb-3" controlId="kt_DIENGIAI">
                             <Form.Label>Tên Khấu trừ</Form.Label>
                             <Form.Control
                                 type="text"
                                 name="kt_DIENGIAI"
-                                defaultvalue={khautruchon.current.kt_DIENGIAI}
+                                defaultValue={khautruchon.current.kt_DIENGIAI}
                                 onChange={(e) => {
                                     khautruchon.current.kt_DIENGIAI = e.target.value;
                                 }}
@@ -419,7 +423,7 @@ const EmployeesPage = () => {
                             <Form.Control
                                 type="number"
                                 name="kt_SOTIEN"
-                                defaultvalue={khautruchon.current.kt_SOTIEN}
+                                defaultValue={khautruchon.current.kt_SOTIEN}
                                 onChange={(e) => {
                                     khautruchon.current.kt_SOTIEN = e.target.value;
                                 }}
@@ -431,7 +435,7 @@ const EmployeesPage = () => {
                             <Form.Control
                                 type="text"
                                 name="kt_LOAITIENKHAUTRU"
-                                defaultvalue={khautruchon.current.kt_LOAITIENKHAUTRU}
+                              defaultValue={khautruchon.current.kt_LOAITIENKHAUTRU}
                                 onChange={(e) => {
                                     khautruchon.current.kt_LOAITIENKHAUTRU = e.target.value
                                 }}
@@ -449,8 +453,22 @@ const EmployeesPage = () => {
                                 }}
                             />
                         </Form.Group>
-                        <Button variant="primary" type="submit">
-                            Thêm Khấu trừ
+                        <Form.Group className="mb-3" controlId="KT_TUDONG">
+                            <Form.Check
+                                type="checkbox"
+                                name="KT_TUDONG"
+                                label="Tự động khấu trừ"
+                                defaultChecked={khautruchon.current.KT_TUDONG}
+                                onChange={() => {
+                                    khautruchon.current.KT_TUDONG = !khautruchon.current.KT_TUDONG
+                                    console.log(khautruchon.current)
+                                }}
+                            />
+                        </Form.Group>
+                        <Button onClick={()=>{
+                            console.log(khautruchon.current)
+                        }} variant="primary" type="submit">
+                            Cập nhật
                         </Button>
                     </Form>
                 </Modal.Body>
