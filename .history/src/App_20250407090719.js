@@ -17,10 +17,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import HeaderEmp from './component/user/EmployeeHeader';
 import SidebarEmp from './component/user/EmployeeSidebar';
 import EmpReports from './component/user/EmployeeReport';
-
-import SalaryScalePage from './component/admin/SalaryScalePage';
-import PayGradePage from "./component/admin/PayGradePage"
-
 import Deductions from './component/admin/DeductionsPage';
 
 // Component chứa layout với Sidebar và Header
@@ -49,8 +45,6 @@ function MainLayout() {
             path="/emp-salary-advance"
             element={<EmployeeSalaryAdvance />}
           />
-          <Route path='/pay-grade' element={<PayGradePage></PayGradePage>}></Route>
-          <Route path="/salary-scale" element={<SalaryScalePage />} />
         </Routes>
       </div>
     </div>

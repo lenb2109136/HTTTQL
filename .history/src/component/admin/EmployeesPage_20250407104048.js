@@ -62,14 +62,14 @@ const EmployeesPage = () => {
             );
             return {
               ...emp,
-              latestChiTietBacLuong: salaryResponse.data,
+              latestChiTietBacLuong: salaryResponse.data, // Gán thông tin chi tiết bậc lương mới nhất
             };
           } catch (error) {
             console.error(
               `Lỗi khi lấy thông tin bậc lương cho nhân viên ${emp.NV_ID}:`,
               error
             );
-            return { ...emp, latestChiTietBacLuong: null };
+            return { ...emp, latestChiTietBacLuong: null }; // Nếu có lỗi, gán null
           }
         })
       );
@@ -83,7 +83,7 @@ const EmployeesPage = () => {
       console.error('Lỗi khi tải danh sách nhân viên:', error);
       toast.error(
         'Không thể tải danh sách nhân viên: ' +
-          (error.response?.data?.message || error.message)
+          (error.response?.data || error.message)
       );
     }
   };
@@ -97,35 +97,37 @@ const EmployeesPage = () => {
       console.error('Lỗi khi tải danh sách phòng ban:', error);
       toast.error(
         'Không thể tải danh sách phòng ban: ' +
-          (error.response?.data?.message || error.message)
+          (error.response?.data || error.message)
       );
     }
   };
 
   const fetchNgachLuongs = async () => {
     try {
-      const response = await axios.get(`${API_URL}/ngach-luong`);
+      const response = await axios.get(`${API_URL}/ngach-luong/latest`);
       console.log('Dữ liệu ngạch lương từ backend:', response.data);
       setNgachLuongs(response.data);
     } catch (error) {
       console.error('Lỗi khi tải danh sách ngạch lương:', error);
       toast.error(
         'Không thể tải danh sách ngạch lương: ' +
-          (error.response?.data?.message || error.message)
+          (error.response?.data || error.message)
       );
     }
   };
 
   const fetchBacLuongs = async ngachId => {
     try {
-      const response = await axios.get(`${API_URL}/bac-luong/ngach/${ngachId}`);
+      const response = await axios.get(
+        `${API_URL}/bac-luong/ngach/${ngachId}/latest`
+      );
       console.log('Dữ liệu bậc lương từ backend:', response.data);
       setBacLuongs(response.data);
     } catch (error) {
       console.error('Lỗi khi tải danh sách bậc lương:', error);
       toast.error(
         'Không thể tải danh sách bậc lương: ' +
-          (error.response?.data?.message || error.message)
+          (error.response?.data || error.message)
       );
     }
   };
@@ -146,7 +148,7 @@ const EmployeesPage = () => {
       setDeleteId(null);
     } catch (error) {
       console.error('Lỗi khi xóa nhân viên:', error);
-      const errorMessage = error.response?.data?.message || error.message;
+      const errorMessage = error.response?.data || error.message;
       if (errorMessage.includes('foreign key constraint fails')) {
         toast.error(
           'Không thể xóa nhân viên vì nhân viên này đang được tham chiếu trong dữ liệu khác (ví dụ: chi tiết bậc lương, ứng lương).'
@@ -218,8 +220,7 @@ const EmployeesPage = () => {
     } catch (error) {
       console.error('Lỗi khi lưu nhân viên:', error);
       toast.error(
-        'Không thể lưu nhân viên: ' +
-          (error.response?.data?.message || error.message)
+        'Không thể lưu nhân viên: ' + (error.response?.data || error.message)
       );
     }
   };
@@ -543,14 +544,6 @@ const EmployeesPage = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Ngạch lương</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={
-                      editingEmployee?.latestChiTietBacLuong?.bac_ID?.ngachLuong
-                        ?.ten || 'Chưa có'
-                    }
-                    readOnly
-                  />
                   <Form.Select
                     value={formData.NGACH_ID}
                     onChange={handleNgachChange}
@@ -570,14 +563,6 @@ const EmployeesPage = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Bậc lương</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={
-                      editingEmployee?.latestChiTietBacLuong?.bac_ID?.ten ||
-                      'Chưa có'
-                    }
-                    readOnly
-                  />
                   <Form.Select
                     value={formData.BAC_ID}
                     onChange={e =>
@@ -614,33 +599,8 @@ const EmployeesPage = () => {
           <Modal.Title>Xác nhận xóa</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {employees
-            .filter(emp => emp.NV_ID === deleteId)
-            .map(emp => (
-              <div key={emp.NV_ID}>
-                <p>
-                  Bạn có chắc chắn muốn xóa nhân viên{' '}
-                  <strong>{emp.NV_HOTEN}</strong> không?
-                </p>
-                <p>
-                  Phòng ban: <strong>{emp.PB_ID?.PB_TEN || 'N/A'}</strong>
-                </p>
-                <p>
-                  Ngạch lương:{' '}
-                  <strong>
-                    {emp.latestChiTietBacLuong?.bac_ID?.ngachLuong?.ten ||
-                      'Chưa có'}
-                  </strong>
-                </p>
-                <p>
-                  Bậc lương:{' '}
-                  <strong>
-                    {emp.latestChiTietBacLuong?.bac_ID?.ten || 'Chưa có'}
-                  </strong>
-                </p>
-                <p className="text-danger">Hành động này không thể hoàn tác!</p>
-              </div>
-            ))}
+          <p>Bạn có chắc chắn muốn xóa nhân viên này không?</p>
+          <p className="text-danger">Hành động này không thể hoàn tác!</p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseDeleteModal}>
