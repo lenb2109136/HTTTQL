@@ -38,7 +38,7 @@ function MainLayout() {
           <Route path="/salary-advance" element={<SalaryAdvance />} />
           <Route path="/departments" element={<Department />} />
           <Route path="/report" element={<Reports />} />
-          <Route path="/deductions" element={<Deductions />} />
+
           <Route path="/userhome" element={<UserHome />} />
           <Route path="/complaints" element={<EmpReports />} />
           <Route

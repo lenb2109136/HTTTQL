@@ -38,10 +38,10 @@ const EmployeesPage = () => {
   };
   const [showModal2, setShowModal2] = useState(false);
   const [newDeduction, setNewDeduction] = useState({
-    kt_DIENGIAI: '',
-    kt_SOTIEN: '',
-    kt_LOAITIENKHAUTRU: 'Công Ty',
-    kt_THUONGNIEN: false,
+    KT_DIENGIAI: '',
+    KT_SOTIEN: '',
+    KT_LOAITIENKHAUTRU: 'Công Ty',
+    KT_THUONGNIEN: false,
   });
 
   const handleDelete = id => {
@@ -96,7 +96,7 @@ const EmployeesPage = () => {
       })
       .catch(() => {});
     axios
-      .get('http://localhost:8080phongban/api/getPhongBan')
+      .get('http://localhost:8080/api/phongban/getPhongBan')
       .then(data => {
         setdanhsachphongban(data.data.data);
       })

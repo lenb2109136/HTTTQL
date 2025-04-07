@@ -104,7 +104,7 @@ const EmployeesPage = () => {
 
   const fetchNgachLuongs = async () => {
     try {
-      const response = await axios.get(`${API_URL}/ngach-luong`);
+      const response = await axios.get(`${API_URL}/ngach-luong/latest`);
       console.log('Dữ liệu ngạch lương từ backend:', response.data);
       setNgachLuongs(response.data);
     } catch (error) {
@@ -118,7 +118,9 @@ const EmployeesPage = () => {
 
   const fetchBacLuongs = async ngachId => {
     try {
-      const response = await axios.get(`${API_URL}/bac-luong/ngach/${ngachId}`);
+      const response = await axios.get(
+        `${API_URL}/bac-luong/ngach/${ngachId}/latest`
+      );
       console.log('Dữ liệu bậc lương từ backend:', response.data);
       setBacLuongs(response.data);
     } catch (error) {
@@ -543,14 +545,6 @@ const EmployeesPage = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Ngạch lương</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={
-                      editingEmployee?.latestChiTietBacLuong?.bac_ID?.ngachLuong
-                        ?.ten || 'Chưa có'
-                    }
-                    readOnly
-                  />
                   <Form.Select
                     value={formData.NGACH_ID}
                     onChange={handleNgachChange}
@@ -566,18 +560,17 @@ const EmployeesPage = () => {
                   <Form.Control.Feedback type="invalid">
                     {errors.NGACH_ID}
                   </Form.Control.Feedback>
+                  {editingEmployee && editingEmployee.latestChiTietBacLuong && (
+                    <Form.Text className="text-muted">
+                      Ngạch lương hiện tại:{' '}
+                      {editingEmployee.latestChiTietBacLuong.bac_ID?.ngachLuong
+                        ?.ten || 'Chưa có'}
+                    </Form.Text>
+                  )}
                 </Form.Group>
 
                 <Form.Group className="mb-3">
                   <Form.Label>Bậc lương</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={
-                      editingEmployee?.latestChiTietBacLuong?.bac_ID?.ten ||
-                      'Chưa có'
-                    }
-                    readOnly
-                  />
                   <Form.Select
                     value={formData.BAC_ID}
                     onChange={e =>
@@ -596,6 +589,13 @@ const EmployeesPage = () => {
                   <Form.Control.Feedback type="invalid">
                     {errors.BAC_ID}
                   </Form.Control.Feedback>
+                  {editingEmployee && editingEmployee.latestChiTietBacLuong && (
+                    <Form.Text className="text-muted">
+                      Bậc lương hiện tại:{' '}
+                      {editingEmployee.latestChiTietBacLuong.bac_ID?.ten ||
+                        'Chưa có'}
+                    </Form.Text>
+                  )}
                 </Form.Group>
               </Col>
             </Row>

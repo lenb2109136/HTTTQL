@@ -535,4 +535,4 @@ const EmployeesPage = () => {
   );
 };
 
-export default EmployeesPage;
+export default DeductionsPage;

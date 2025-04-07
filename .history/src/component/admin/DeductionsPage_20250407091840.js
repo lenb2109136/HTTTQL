@@ -71,7 +71,7 @@ const EmployeesPage = () => {
   const handleSubmit = e => {
     e.preventDefault();
     axios
-      .post('http://localhost:8080/api/khautru/add', newDeduction)
+      .post('http://localhost:8080/khautru/add', newDeduction)
       .then(response => {
         setkhautruthuongnien(prev => [...prev, response.data]);
         setShowModal(false);
@@ -83,27 +83,27 @@ const EmployeesPage = () => {
 
   useEffect(() => {
     axios
-      .get('http://localhost:8080/api/khautru/getkhautrunoibo')
+      .get('http://localhost:8080/khautru/getkhautrunoibo')
       .then(data => {
         setkhautrunoibo(data.data.data);
       })
       .catch(() => {});
 
     axios
-      .get('http://localhost:8080/api/khautru/getkhautruthuongnien')
+      .get('http://localhost:8080/khautru/getkhautruthuongnien')
       .then(data => {
         setkhautruthuongnien(data.data.data);
       })
       .catch(() => {});
     axios
-      .get('http://localhost:8080phongban/api/getPhongBan')
+      .get('http://localhost:8080phongban/getPhongBan')
       .then(data => {
         setdanhsachphongban(data.data.data);
       })
       .catch(() => {});
     axios
       .get(
-        'http://localhost:8080/api/nhanvien/getPhongBanSoDienThoai?idphongban=0&sodienthoai='
+        'http://localhost:8080/nhanvien/getPhongBanSoDienThoai?idphongban=0&sodienthoai='
       )
       .then(data => {
         setdsnhanvien(data.data.data);
@@ -111,14 +111,14 @@ const EmployeesPage = () => {
   }, []);
   useEffect(() => {
     axios
-      .get('http://localhost:8080/api/khautru/getkhautrunoibo')
+      .get('http://localhost:8080/khautru/getkhautrunoibo')
       .then(data => {
         setkhautrunoibo(data.data.data);
       })
       .catch(() => {});
 
     axios
-      .get('http://localhost:8080/api/khautru/getkhautruthuongnien')
+      .get('http://localhost:8080/khautru/getkhautruthuongnien')
       .then(data => {
         setkhautruthuongnien(data.data.data);
       })

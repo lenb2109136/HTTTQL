@@ -52,30 +52,8 @@ const EmployeesPage = () => {
     try {
       const response = await axios.get(`${API_URL}/nhanvien`);
       console.log('Dữ liệu nhân viên từ backend:', response.data);
-
-      // Lấy thông tin chi tiết bậc lương mới nhất cho mỗi nhân viên
-      const employeesWithSalaryDetails = await Promise.all(
-        response.data.map(async emp => {
-          try {
-            const salaryResponse = await axios.get(
-              `${API_URL}/chi-tiet-bac-luong/nhan-vien/${emp.NV_ID}/latest`
-            );
-            return {
-              ...emp,
-              latestChiTietBacLuong: salaryResponse.data,
-            };
-          } catch (error) {
-            console.error(
-              `Lỗi khi lấy thông tin bậc lương cho nhân viên ${emp.NV_ID}:`,
-              error
-            );
-            return { ...emp, latestChiTietBacLuong: null };
-          }
-        })
-      );
-
       // Sắp xếp nhân viên theo tên phòng ban
-      const sortedEmployees = employeesWithSalaryDetails.sort((a, b) =>
+      const sortedEmployees = response.data.sort((a, b) =>
         (a.PB_ID?.PB_TEN || '').localeCompare(b.PB_ID?.PB_TEN || '')
       );
       setEmployees(sortedEmployees);
@@ -83,7 +61,7 @@ const EmployeesPage = () => {
       console.error('Lỗi khi tải danh sách nhân viên:', error);
       toast.error(
         'Không thể tải danh sách nhân viên: ' +
-          (error.response?.data?.message || error.message)
+          (error.response?.data || error.message)
       );
     }
   };
@@ -97,35 +75,37 @@ const EmployeesPage = () => {
       console.error('Lỗi khi tải danh sách phòng ban:', error);
       toast.error(
         'Không thể tải danh sách phòng ban: ' +
-          (error.response?.data?.message || error.message)
+          (error.response?.data || error.message)
       );
     }
   };
 
   const fetchNgachLuongs = async () => {
     try {
-      const response = await axios.get(`${API_URL}/ngach-luong`);
+      const response = await axios.get(`${API_URL}/ngach-luong/latest`);
       console.log('Dữ liệu ngạch lương từ backend:', response.data);
       setNgachLuongs(response.data);
     } catch (error) {
       console.error('Lỗi khi tải danh sách ngạch lương:', error);
       toast.error(
         'Không thể tải danh sách ngạch lương: ' +
-          (error.response?.data?.message || error.message)
+          (error.response?.data || error.message)
       );
     }
   };
 
   const fetchBacLuongs = async ngachId => {
     try {
-      const response = await axios.get(`${API_URL}/bac-luong/ngach/${ngachId}`);
+      const response = await axios.get(
+        `${API_URL}/bac-luong/ngach/${ngachId}/latest`
+      );
       console.log('Dữ liệu bậc lương từ backend:', response.data);
       setBacLuongs(response.data);
     } catch (error) {
       console.error('Lỗi khi tải danh sách bậc lương:', error);
       toast.error(
         'Không thể tải danh sách bậc lương: ' +
-          (error.response?.data?.message || error.message)
+          (error.response?.data || error.message)
       );
     }
   };
@@ -139,14 +119,15 @@ const EmployeesPage = () => {
   const confirmDelete = async () => {
     try {
       console.log('Xác nhận xóa nhân viên ID:', deleteId);
-      await axios.delete(`${API_URL}/nhanvien/${deleteId}`);
+      const response = await axios.delete(`${API_URL}/nhanvien/${deleteId}`);
+      console.log('Kết quả xóa:', response.data);
       toast.success('Đã xóa nhân viên thành công!');
       fetchEmployees();
       setShowDeleteModal(false);
       setDeleteId(null);
     } catch (error) {
       console.error('Lỗi khi xóa nhân viên:', error);
-      const errorMessage = error.response?.data?.message || error.message;
+      const errorMessage = error.response?.data || error.message;
       if (errorMessage.includes('foreign key constraint fails')) {
         toast.error(
           'Không thể xóa nhân viên vì nhân viên này đang được tham chiếu trong dữ liệu khác (ví dụ: chi tiết bậc lương, ứng lương).'
@@ -202,13 +183,15 @@ const EmployeesPage = () => {
       console.log('Gửi dữ liệu:', payload);
 
       if (editingEmployee) {
-        await axios.put(
+        const response = await axios.put(
           `${API_URL}/nhanvien/${editingEmployee.NV_ID}`,
           payload
         );
+        console.log('Kết quả sửa:', response.data);
         toast.success('Đã sửa thông tin nhân viên thành công!');
       } else {
-        await axios.post(`${API_URL}/nhanvien`, payload);
+        const response = await axios.post(`${API_URL}/nhanvien`, payload);
+        console.log('Kết quả thêm:', response.data);
         toast.success('Đã thêm nhân viên thành công!');
       }
       setShowModal(false);
@@ -218,8 +201,7 @@ const EmployeesPage = () => {
     } catch (error) {
       console.error('Lỗi khi lưu nhân viên:', error);
       toast.error(
-        'Không thể lưu nhân viên: ' +
-          (error.response?.data?.message || error.message)
+        'Không thể lưu nhân viên: ' + (error.response?.data || error.message)
       );
     }
   };
@@ -332,13 +314,9 @@ const EmployeesPage = () => {
                 <td>{emp.NV_HOTEN || 'N/A'}</td>
                 <td>{emp.PB_ID?.PB_TEN || 'N/A'}</td>
                 <td>
-                  {emp.latestChiTietBacLuong?.bac_ID?.ngachLuong?.ten ||
-                    'Chưa có ngạch lương'}
+                  {emp.latestChiTietBacLuong?.bac_ID?.ngachLuong?.ten || 'N/A'}
                 </td>
-                <td>
-                  {emp.latestChiTietBacLuong?.bac_ID?.ten ||
-                    'Chưa có bậc lương'}
-                </td>
+                <td>{emp.latestChiTietBacLuong?.bac_ID?.ten || 'N/A'}</td>
                 <td>
                   <Button
                     variant="warning"
@@ -543,14 +521,6 @@ const EmployeesPage = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Ngạch lương</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={
-                      editingEmployee?.latestChiTietBacLuong?.bac_ID?.ngachLuong
-                        ?.ten || 'Chưa có'
-                    }
-                    readOnly
-                  />
                   <Form.Select
                     value={formData.NGACH_ID}
                     onChange={handleNgachChange}
@@ -570,14 +540,6 @@ const EmployeesPage = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Bậc lương</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={
-                      editingEmployee?.latestChiTietBacLuong?.bac_ID?.ten ||
-                      'Chưa có'
-                    }
-                    readOnly
-                  />
                   <Form.Select
                     value={formData.BAC_ID}
                     onChange={e =>
@@ -614,33 +576,8 @@ const EmployeesPage = () => {
           <Modal.Title>Xác nhận xóa</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {employees
-            .filter(emp => emp.NV_ID === deleteId)
-            .map(emp => (
-              <div key={emp.NV_ID}>
-                <p>
-                  Bạn có chắc chắn muốn xóa nhân viên{' '}
-                  <strong>{emp.NV_HOTEN}</strong> không?
-                </p>
-                <p>
-                  Phòng ban: <strong>{emp.PB_ID?.PB_TEN || 'N/A'}</strong>
-                </p>
-                <p>
-                  Ngạch lương:{' '}
-                  <strong>
-                    {emp.latestChiTietBacLuong?.bac_ID?.ngachLuong?.ten ||
-                      'Chưa có'}
-                  </strong>
-                </p>
-                <p>
-                  Bậc lương:{' '}
-                  <strong>
-                    {emp.latestChiTietBacLuong?.bac_ID?.ten || 'Chưa có'}
-                  </strong>
-                </p>
-                <p className="text-danger">Hành động này không thể hoàn tác!</p>
-              </div>
-            ))}
+          <p>Bạn có chắc chắn muốn xóa nhân viên này không?</p>
+          <p className="text-danger">Hành động này không thể hoàn tác!</p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseDeleteModal}>

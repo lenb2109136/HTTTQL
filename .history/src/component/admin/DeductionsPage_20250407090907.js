@@ -96,7 +96,7 @@ const EmployeesPage = () => {
       })
       .catch(() => {});
     axios
-      .get('http://localhost:8080phongban/api/getPhongBan')
+      .get('http://localhost:8080/api/phongban/getPhongBan')
       .then(data => {
         setdanhsachphongban(data.data.data);
       })

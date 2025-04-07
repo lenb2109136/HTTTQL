@@ -53,7 +53,6 @@ const EmployeesPage = () => {
       const response = await axios.get(`${API_URL}/nhanvien`);
       console.log('Dữ liệu nhân viên từ backend:', response.data);
 
-      // Lấy thông tin chi tiết bậc lương mới nhất cho mỗi nhân viên
       const employeesWithSalaryDetails = await Promise.all(
         response.data.map(async emp => {
           try {
@@ -74,7 +73,6 @@ const EmployeesPage = () => {
         })
       );
 
-      // Sắp xếp nhân viên theo tên phòng ban
       const sortedEmployees = employeesWithSalaryDetails.sort((a, b) =>
         (a.PB_ID?.PB_TEN || '').localeCompare(b.PB_ID?.PB_TEN || '')
       );
@@ -224,7 +222,7 @@ const EmployeesPage = () => {
     }
   };
 
-  const handleEdit = employee => {
+  const handleEdit = async employee => {
     console.log('Chỉnh sửa nhân viên:', employee);
     setEditingEmployee(employee);
     setFormData({
@@ -237,12 +235,18 @@ const EmployeesPage = () => {
       NV_USERNAME: employee.NV_USERNAME || '',
       NV_PASSWORD: employee.NV_PASSWORD || '',
       NV_DIACHI: employee.NV_DIACHI || '',
-      NGACH_ID: employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id || '',
-      BAC_ID: employee.latestChiTietBacLuong?.bac_ID?.id || '',
+      NGACH_ID:
+        employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.NGACH_ID || '',
+      BAC_ID: employee.latestChiTietBacLuong?.bac_ID?.BAC_ID || '',
     });
-    if (employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id) {
-      fetchBacLuongs(employee.latestChiTietBacLuong.bac_ID.ngachLuong.id);
+
+    // Lấy danh sách bậc lương dựa trên ngạch lương của nhân viên
+    if (employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.NGACH_ID) {
+      await fetchBacLuongs(
+        employee.latestChiTietBacLuong.bac_ID.ngachLuong.NGACH_ID
+      );
     }
+
     setErrors({});
     setShowPassword(false);
     setShowModal(true);
@@ -267,10 +271,12 @@ const EmployeesPage = () => {
     setBacLuongs([]);
   };
 
-  const handleNgachChange = e => {
+  const handleNgachChange = async e => {
     const ngachId = e.target.value;
     setFormData({ ...formData, NGACH_ID: ngachId, BAC_ID: '' });
-    if (ngachId) fetchBacLuongs(ngachId);
+    if (ngachId) {
+      await fetchBacLuongs(ngachId); // Cập nhật danh sách bậc lương khi thay đổi ngạch
+    }
   };
 
   const handleCloseModal = () => {
@@ -332,11 +338,11 @@ const EmployeesPage = () => {
                 <td>{emp.NV_HOTEN || 'N/A'}</td>
                 <td>{emp.PB_ID?.PB_TEN || 'N/A'}</td>
                 <td>
-                  {emp.latestChiTietBacLuong?.bac_ID?.ngachLuong?.ten ||
+                  {emp.latestChiTietBacLuong?.bac_ID?.ngachLuong?.NGACH_TEN ||
                     'Chưa có ngạch lương'}
                 </td>
                 <td>
-                  {emp.latestChiTietBacLuong?.bac_ID?.ten ||
+                  {emp.latestChiTietBacLuong?.bac_ID?.BAC_TEN ||
                     'Chưa có bậc lương'}
                 </td>
                 <td>
@@ -543,14 +549,6 @@ const EmployeesPage = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Ngạch lương</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={
-                      editingEmployee?.latestChiTietBacLuong?.bac_ID?.ngachLuong
-                        ?.ten || 'Chưa có'
-                    }
-                    readOnly
-                  />
                   <Form.Select
                     value={formData.NGACH_ID}
                     onChange={handleNgachChange}
@@ -570,14 +568,6 @@ const EmployeesPage = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Bậc lương</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={
-                      editingEmployee?.latestChiTietBacLuong?.bac_ID?.ten ||
-                      'Chưa có'
-                    }
-                    readOnly
-                  />
                   <Form.Select
                     value={formData.BAC_ID}
                     onChange={e =>
@@ -628,14 +618,14 @@ const EmployeesPage = () => {
                 <p>
                   Ngạch lương:{' '}
                   <strong>
-                    {emp.latestChiTietBacLuong?.bac_ID?.ngachLuong?.ten ||
+                    {emp.latestChiTietBacLuong?.bac_ID?.ngachLuong?.NGACH_TEN ||
                       'Chưa có'}
                   </strong>
                 </p>
                 <p>
                   Bậc lương:{' '}
                   <strong>
-                    {emp.latestChiTietBacLuong?.bac_ID?.ten || 'Chưa có'}
+                    {emp.latestChiTietBacLuong?.bac_ID?.BAC_TEN || 'Chưa có'}
                   </strong>
                 </p>
                 <p className="text-danger">Hành động này không thể hoàn tác!</p>
