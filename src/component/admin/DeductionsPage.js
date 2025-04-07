@@ -1,11 +1,28 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useInsertionEffect, useRef, useState } from 'react';
 import { Table, Button, Container, Row, Col, Modal, Form } from 'react-bootstrap';
 import { FiPlus } from 'react-icons/fi';
-import { Checkbox, Tab, Tabs } from '@mui/material';  // Import MUI Tab và Tabs
-import { Box } from '@mui/material';  // Sử dụng Box để bọc nội dung tab
+import { Checkbox, Dialog, DialogContent, DialogTitle, Tab, Tabs, Tooltip } from '@mui/material';
+import { Box } from '@mui/material';
 import axios from 'axios';
+import { Bar, BarChart, CartesianGrid, LabelList, Legend, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
 const EmployeesPage = () => {
+    function formatDateTime(date) {
+        const pad = (num) => String(num).padStart(2, '0');
+    
+        const yyyy = date.getFullYear();
+        const MM = pad(date.getMonth() + 1);
+        const dd = pad(date.getDate());
+        const HH = pad(date.getHours());
+        const mm = pad(date.getMinutes());
+        const ss = pad(date.getSeconds());
+    
+        return `${yyyy}-${MM}-${dd}T${HH}:${mm}:${ss}`;
+    }
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const [startDate, setStartDate] = useState(startOfMonth);
+    const [endDate, setEndDate] = useState(today);
     const [selectedPhongBan, setSelectedPhongBan] = useState(null);
     const [soDienThoai, setSoDienThoai] = useState("");
     const dsduocchon = useRef([])
@@ -18,6 +35,8 @@ const EmployeesPage = () => {
     const [load, setload] = useState(false)
     const [showModal, setShowModal] = useState(false);
     const [showModal3, setShowModal3] = useState(false);
+    const [opena, setOpena] = useState(true)
+    const not = useRef(false)
     const handleModalOpen3 = (data) => {
         setShowModal3(true)
     };
@@ -95,6 +114,12 @@ const EmployeesPage = () => {
             })
 
     }, []);
+    //     useEffect(()=>{
+    //             axios.get(`http://localhost:8080/khautru/thongke?nbd=${startDate}&nkt=${endDate}`)
+    //     },[startDate,endDate])
+    //     useEffect(()=>{
+    //         axios.get(`http://localhost:8080/khautru/thongke?nbd=${startDate}&nkt=${endDate}`)
+    // },[])
     useEffect(() => {
         axios.get('http://localhost:8080/khautru/getkhautrunoibo')
             .then((data) => {
@@ -108,6 +133,59 @@ const EmployeesPage = () => {
             })
             .catch(() => { });
     }, [load]);
+
+    const [dulieu, setDulieu] = useState([
+        { "KT_LOAITIENKHAUTRU": "Bảo hiểm", "KT_DIENGIAI": "Khấu trừ bảo hiểm xã hội", "KT_SOTIEN": 500000.0 },
+        { "KT_DIENGIAI": "Khấu trừ thuế TNCN", "KT_SOTIEN": 25000.0, "KT_LOAITIENKHAUTRU": "Mức thuế" },
+        { "KT_DIENGIAI": "Khấu trừ bảo hiểm y tế", "KT_LOAITIENKHAUTRU": "Bảo hiểm", "KT_SOTIEN": 200000.0 },
+        { "KT_LOAITIENKHAUTRU": "Công Ty", "KT_DIENGIAI": "Khấu trừ thiệt hai công", "KT_SOTIEN": 200.0 },
+        { "KT_DIENGIAI": "Khấu trừ phí phục vụ", "KT_SOTIEN": 500.0, "KT_LOAITIENKHAUTRU": "khấu trừ công ty" },
+        { "KT_DIENGIAI": "Khấu trừ sinh hoạt phí", "KT_LOAITIENKHAUTRU": "khấu trừ công ty", "KT_SOTIEN": 200.0 },
+        { "KT_DIENGIAI": "Khấu trừ phí phục vụ", "KT_SOTIEN": 300.0, "KT_LOAITIENKHAUTRU": "Công Ty" },
+        { "KT_ID": 8, "KT_LOAITIENKHAUTRU": "Công Ty", "KT_SOTIEN": 200.0, "KT_DIENGIAI": "Đồng phục hàng năm" }
+    ]);
+
+    const [open, setOpen] = useState(false);
+
+    const transformData = (data) => {
+        return data.map(item => ({
+            name: item.KT_DIENGIAI,
+            value: item.tong_id 
+        }));
+    };
+
+    const generateColors = (numColors) => {
+        return Array.from({ length: numColors }, (_, i) => `hsl(${(i * 360) / numColors}, 70%, 50%)`);
+    };
+
+    const chartData = transformData(dulieu);
+    const keys = Object.keys(dulieu.reduce((acc, item) => {
+        acc[item.KT_LOAITIENKHAUTRU] = true;
+        return acc;
+    }, {}));
+    const colors = generateColors(keys.length);
+    useEffect(() => {
+        const formattedStartDate = formatDateTime(startDate);
+        const formattedEndDate = formatDateTime(endDate);
+        axios.get(`http://localhost:8080/khautru/${not.current == false ? "thongke" : "thongkenot"}?nbd=${formattedStartDate}&nkt=${formattedEndDate}`)
+            .then(response => {
+                setDulieu(response.data.data)
+                console.log(response.data.data)
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    }, [startDate, endDate]);
+
+    useEffect(() => {
+        const formattedStartDate = formatDateTime(startDate);
+        const formattedEndDate = formatDateTime(endDate);
+        axios.get(`http://localhost:8080/khautru/${not.current == false ? "thongke" : "thongkenot"}?nbd=${formattedStartDate}&nkt=${formattedEndDate}`)
+            .then(response => {
+                setDulieu(response.data.data)
+                console.log(response.data.data)
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    }, []);
+
     return (
         <Container>
             <h1 className="text-center my-4">Quản Lý Khấu trừ</h1>
@@ -125,6 +203,22 @@ const EmployeesPage = () => {
                         <Row className="mb-3 d-flex justify-content-between align-items-center">
                             <Col></Col>
                             <Col className="text-end">
+                                <Button style={{ marginRight: "15px" }} variant="primary" onClick={() => {
+                                    not.current = false;
+                                    const formattedStartDate = formatDateTime(startDate);
+                                    const formattedEndDate = formatDateTime(endDate);
+                                    axios.get(`http://localhost:8080/khautru/${not.current == false ? "thongke" : "thongkenot"}?nbd=${formattedStartDate}&nkt=${formattedEndDate}`)
+                                        .then(response => {
+                                            setDulieu(response.data.data)
+                                            console.log(response.data.data)
+                                        })
+                                        .catch(error => console.error('Error fetching data:', error))
+                                    .catch(error => console.error('Error fetching data:', error));
+                                    setOpena(true)
+                                }
+                                }>
+                                    <FiPlus /> Xem Khấu trừ
+                                </Button>
                                 <Button variant="primary" onClick={() => setShowModal(true)}>
                                     <FiPlus /> Tạo Khấu trừ mới
                                 </Button>
@@ -170,8 +264,23 @@ const EmployeesPage = () => {
                                 <h2>Danh sách nhân viên</h2>
                             </Col>
                             <Col className="text-end">
+                                <Button style={{ marginRight: "15px" }} variant="primary" onClick={() => {
+                                    not.current = true;
+                                    const formattedStartDate = formatDateTime(startDate);
+                                    const formattedEndDate = formatDateTime(endDate);
+                                    axios.get(`http://localhost:8080/khautru/${not.current == false ? "thongke" : "thongkenot"}?nbd=${formattedStartDate}&nkt=${formattedEndDate}`)
+                                        .then(response => {
+                                            setDulieu(response.data.data)
+                                            console.log(response.data.data)
+                                        })
+                                        .catch(error => console.error('Error fetching data:', error))
+                                    .catch(error => console.error('Error fetching data:', error));
+                                    setOpena(true)
+                                }}>
+                                    <FiPlus /> Xem Khấu trừ
+                                </Button>
                                 <Button variant="primary">
-                                    <FiPlus /> Thêm nhân viên
+                                    <FiPlus /> Thêm khấu trừ
                                 </Button>
                             </Col>
                         </Row>
@@ -389,22 +498,22 @@ const EmployeesPage = () => {
                     <Form onSubmit={(e) => {
                         e.preventDefault();
                         console.log(khautruchon.current)
-                       
+
                         axios.post(
                             `http://localhost:8080/khautru/update`,
                             khautruchon.current,
                             {
-                              headers: {
-                                'Content-Type': 'application/json'
-                              }
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
                             }
-                          ).then(() => {
+                        ).then(() => {
                             alert("Cập nhật thành công")
                             setload(!load)
-                          }).catch(() => {
+                        }).catch(() => {
                             alert("Tạo khấu trừ thất bại")
-                          })
-                          
+                        })
+
                     }}>
                         <Form.Group className="mb-3" controlId="kt_DIENGIAI">
                             <Form.Label>Tên Khấu trừ</Form.Label>
@@ -435,7 +544,7 @@ const EmployeesPage = () => {
                             <Form.Control
                                 type="text"
                                 name="kt_LOAITIENKHAUTRU"
-                              defaultValue={khautruchon.current.kt_LOAITIENKHAUTRU}
+                                defaultValue={khautruchon.current.kt_LOAITIENKHAUTRU}
                                 onChange={(e) => {
                                     khautruchon.current.kt_LOAITIENKHAUTRU = e.target.value
                                 }}
@@ -465,7 +574,7 @@ const EmployeesPage = () => {
                                 }}
                             />
                         </Form.Group>
-                        <Button onClick={()=>{
+                        <Button onClick={() => {
                             console.log(khautruchon.current)
                         }} variant="primary" type="submit">
                             Cập nhật
@@ -474,6 +583,61 @@ const EmployeesPage = () => {
                 </Modal.Body>
 
             </Modal>
+
+            <Dialog open={opena} onClose={() => setOpena(false)}>
+                <DialogTitle style={{ textAlign: "center" }}>Biểu đồ Khấu Trừ</DialogTitle>
+
+                <DialogContent style={{ minWidth: 600 }}>
+                    {/* Hai input chọn ngày giờ */}
+                    <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
+                        <div style={{ flex: 1 }}>
+                            <label htmlFor="start">Từ ngày:</label>
+                            <input
+                                id="start"
+                                type="datetime-local"
+                                value={startDate.toISOString().slice(0, 16)}
+                                onChange={(e) => setStartDate(new Date(e.target.value))}
+                                style={{ width: '100%', padding: 8 }}
+                            />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <label htmlFor="end">Đến ngày:</label>
+                            <input
+                                id="end"
+                                type="datetime-local"
+                                value={endDate.toISOString().slice(0, 16)}
+                                onChange={(e) => setEndDate(new Date(e.target.value))}
+                                style={{ width: '100%', padding: 8 }}
+                            />
+                        </div>
+                    </div>
+
+                    <ResponsiveContainer width="100%" height={400}>
+    <BarChart data={chartData}>
+        <XAxis dataKey="name" interval={0} angle={-15} />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="value" fill="#8884d8">
+            {
+                chartData.map((entry, index) => (
+                    <LabelList
+                        key={index}
+                        dataKey="value"
+                        position="top"
+                        formatter={(value) => value === 0 ? "0" : value}
+                    />
+                ))
+            }
+        </Bar>
+    </BarChart>
+</ResponsiveContainer>
+
+                </DialogContent>
+            </Dialog>
+
+
+
 
         </Container>
     );
