@@ -325,8 +325,10 @@ const EmployeesPage = () => {
                 </Modal.Body>
                 <Button style={{backgroundColor:"#0d6efd",color:"white"}} onClick={() => {
                     dsluong.forEach((f) => {
+                        console.log(f)
+                        console.log("EMAIL NHÂN VIÊN LÀ: "+f.thongtinnhanvien.NV_EMAIL)
                         let form = new FormData()
-                        form.append("email", f?.thongtinnhanvien?.nv_EMAIL)
+                        form.append("email", f.thongtinnhanvien.NV_EMAIL)
                         form.append("tieude", document.getElementById("tieude").value)
                         form.append("noidung", document.getElementById("noidung").value)
                         form.append("map", JSON.stringify(f))

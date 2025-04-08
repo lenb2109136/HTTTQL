@@ -430,7 +430,7 @@ const EmployeesPage = () => {
                     </div>
 
                     {/* Bảng danh sách nhân viên */}
-                    <Table striped bordered hover>
+                    <Table striped bordered >
                         <thead>
                             <tr>
                                 <th>STT</th>
@@ -485,8 +485,7 @@ const EmployeesPage = () => {
                             alert("Tạo khấu trừ thất bại");
                         });
                 }} variant="contained">
-                    Tạo khấu trừ
-                </Button>
+                    Tạo khấu trừ </Button>
 
             </Modal>
 
