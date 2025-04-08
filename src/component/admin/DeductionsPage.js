@@ -9,14 +9,14 @@ import { Bar, BarChart, CartesianGrid, LabelList, Legend, Line, LineChart, Respo
 const EmployeesPage = () => {
     function formatDateTime(date) {
         const pad = (num) => String(num).padStart(2, '0');
-    
+
         const yyyy = date.getFullYear();
         const MM = pad(date.getMonth() + 1);
         const dd = pad(date.getDate());
         const HH = pad(date.getHours());
         const mm = pad(date.getMinutes());
         const ss = pad(date.getSeconds());
-    
+
         return `${yyyy}-${MM}-${dd}T${HH}:${mm}:${ss}`;
     }
     const today = new Date();
@@ -103,12 +103,12 @@ const EmployeesPage = () => {
                 setkhautruthuongnien(data.data.data);
             })
             .catch(() => { });
-        axios.get('http://localhost:8080/phongban/getPhongBan')
+        axios.get('http://localhost:8080/api/phongban/getPhongBan')
             .then((data) => {
                 setdanhsachphongban(data.data.data);
             })
             .catch(() => { });
-        axios.get("http://localhost:8080/nhanvien/getPhongBanSoDienThoai?idphongban=0&sodienthoai=")
+        axios.get("http://localhost:8080/api/nhanvien/getPhongBanSoDienThoai?idphongban=0&sodienthoai=")
             .then((data) => {
                 setdsnhanvien(data.data.data)
             })
@@ -150,7 +150,7 @@ const EmployeesPage = () => {
     const transformData = (data) => {
         return data.map(item => ({
             name: item.KT_DIENGIAI,
-            value: item.tong_id 
+            value: item.tong_id
         }));
     };
 
@@ -401,14 +401,14 @@ const EmployeesPage = () => {
                     <div className="d-flex gap-3 mb-3">
                         <Form.Select value={selectedPhongBan} onChange={(e) => {
                             setSelectedPhongBan(e.target.value);
-                            axios.get(`http://localhost:8080/nhanvien/getPhongBanSoDienThoai?idphongban=${e.target.value}&sodienthoai=${soDienThoai}`)
+                            axios.get(`http://localhost:8080/api/nhanvien/getPhongBanSoDienThoai?idphongban=${e.target.value}&sodienthoai=${soDienThoai}`)
                                 .then((data) => {
                                     setdsnhanvien(data.data.data)
                                 })
                         }}>
                             <option value="0">Chọn phòng ban</option>
                             {danhsachphongban.map((pb) => (
-                                <option key={pb.pb_ID} value={pb.pb_ID}>
+                                <option style={{color:"black"}} key={pb.pb_ID} value={pb.pb_ID}>
                                     {pb.pb_TEN}
                                 </option>
                             ))}
@@ -420,7 +420,7 @@ const EmployeesPage = () => {
                             value={soDienThoai}
                             onChange={(e) => {
                                 setSoDienThoai(e.target.value);
-                                axios.get(`http://localhost:8080/nhanvien/getPhongBanSoDienThoai?idphongban=${selectedPhongBan}&sodienthoai=${e.target.value}`)
+                                axios.get(`http://localhost:8080/api/nhanvien/getPhongBanSoDienThoai?idphongban=${selectedPhongBan}&sodienthoai=${e.target.value}`)
                                     .then((data) => {
                                         setdsnhanvien(data.data.data)
                                     })
@@ -445,11 +445,11 @@ const EmployeesPage = () => {
                                 const isChecked = dsduocchon.current.some(item => item.nv_ID === emp.nv_ID);
 
                                 return (
-                                    <tr key={emp.nv_ID}>
+                                    <tr key={emp.nv_ID+"khk"}>
                                         <td>{index + 1}</td>
                                         <td>{emp.nv_HOTEN}</td>
                                         <td>{emp.nv_SDT}</td>
-                                        <td>{emp.nv_EMAIL}</td>
+                                        <td style={{color:"black"}}>{emp.nv_EMAIL}</td>
                                         <td>
                                             <Checkbox
                                                 defaultChecked={isChecked}
