@@ -10,7 +10,14 @@ import {
   Alert,
   InputGroup,
 } from 'react-bootstrap';
-import { FiPlus, FiEye, FiEyeOff, FiList } from 'react-icons/fi';
+import {
+  FiPlus,
+  FiEye,
+  FiEyeOff,
+  FiList,
+  FiEdit,
+  FiTrash,
+} from 'react-icons/fi';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -141,9 +148,9 @@ const EmployeesPage = () => {
         `${API_URL}/chi-tiet-bac-luong/nhan-vien/${employeeId}`
       );
       console.log('Lịch sử bậc lương:', response.data);
-      // Sắp xếp theo ngày áp dụng tăng dần (cũ nhất lên đầu)
+      // Sắp xếp theo ngày áp dụng để xác định bản ghi "Hiện tại"
       const sortedHistory = response.data.sort(
-        (a, b) => new Date(a.ngayApDung) - new Date(b.ngayApDung)
+        (a, b) => new Date(b.ngayApDung) - new Date(a.ngayApDung)
       );
       setSalaryHistory(sortedHistory);
       setShowHistoryModal(true);
@@ -199,7 +206,7 @@ const EmployeesPage = () => {
     if (!formData.NV_USERNAME) newErrors.NV_USERNAME = 'Username là bắt buộc';
     if (!formData.NV_PASSWORD) newErrors.NV_PASSWORD = 'Mật khẩu là bắt buộc';
     if (!formData.NV_DIACHI) newErrors.NV_DIACHI = 'Địa chỉ là bắt buộc';
-    if (!formData.NGACH_ID) newErrors.NGACH_ID = 'Ngạch lương là bắt buộc';
+    if (!formData.NGACH_ID) newErrors.NV_ID = 'Ngạch lương là bắt buộc';
     if (!formData.BAC_ID) newErrors.BAC_ID = 'Bậc lương là bắt buộc';
     return newErrors;
   };
@@ -288,7 +295,7 @@ const EmployeesPage = () => {
       NV_USERNAME: employee.NV_USERNAME || '',
       NV_PASSWORD: employee.NV_PASSWORD || '',
       NV_DIACHI: employee.NV_DIACHI || '',
-      NGACH_ID: employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id || '/',
+      NGACH_ID: employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id || '',
       BAC_ID: employee.latestChiTietBacLuong?.bac_ID?.id || '',
     });
     if (employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id) {
@@ -418,7 +425,7 @@ const EmployeesPage = () => {
                     Xóa
                   </Button>
                   <Button
-                    variant="success"
+                    variant="info"
                     onClick={() => handleShowHistory(emp.NV_ID)}
                   >
                     <FiList /> Lịch sử
@@ -725,20 +732,21 @@ const EmployeesPage = () => {
                   <th className="text-center">Bậc lương</th>
                   <th className="text-center">Hệ số</th>
                   <th className="text-center">Trạng thái</th>
+                  <th className="text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {salaryHistory.map((history, index) => {
-                  const startDate = new Date(
-                    history.ngayApDung
-                  ).toLocaleDateString();
-                  const endDate =
-                    index < salaryHistory.length - 1
-                      ? new Date(
-                          salaryHistory[index + 1].ngayApDung
-                        ).toLocaleDateString()
-                      : 'Hiện tại';
-                  const status = `${startDate} - ${endDate}`;
+                  const isCurrent = index === 0; // Bản ghi đầu tiên là mới nhất (Hiện tại)
+                  const status = isCurrent
+                    ? 'Hiện tại'
+                    : `${new Date(history.ngayApDung).toLocaleDateString()} - ${
+                        index < salaryHistory.length - 1
+                          ? new Date(
+                              salaryHistory[index + 1].ngayApDung
+                            ).toLocaleDateString()
+                          : 'N/A'
+                      }`;
                   return (
                     <tr key={history.id}>
                       <td className="text-center">
@@ -751,6 +759,14 @@ const EmployeesPage = () => {
                         {history.bac_ID?.heSo || 'N/A'}
                       </td>
                       <td className="text-center">{status}</td>
+                      <td className="text-center">
+                        <Button variant="warning" size="sm" className="me-2">
+                          <FiEdit /> Sửa
+                        </Button>
+                        <Button variant="danger" size="sm">
+                          <FiTrash /> Xóa
+                        </Button>
+                      </td>
                     </tr>
                   );
                 })}

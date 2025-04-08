@@ -159,7 +159,7 @@ const ComplaintsPage = () => {
           {complaints.map((complaint, index) => (
             <tr key={complaint.kn_ID}>
               <td>{index + 1}</td>
-              <td>{complaint.nv_ID?.NV_HOTEN || 'N/A'}</td>
+              <td>{complaint.nv_ID?.nv_HOTEN || 'N/A'}</td>
               <td>{complaint.kn_NOIDUNG}</td>
               <td>{new Date(complaint.kn_NGAYKN).toLocaleDateString()}</td>
               <td>{complaint.kn_TRANGTHAI}</td>

@@ -141,9 +141,9 @@ const EmployeesPage = () => {
         `${API_URL}/chi-tiet-bac-luong/nhan-vien/${employeeId}`
       );
       console.log('Lịch sử bậc lương:', response.data);
-      // Sắp xếp theo ngày áp dụng tăng dần (cũ nhất lên đầu)
+      // Sắp xếp theo ngày áp dụng giảm dần (mới nhất lên đầu)
       const sortedHistory = response.data.sort(
-        (a, b) => new Date(a.ngayApDung) - new Date(b.ngayApDung)
+        (a, b) => new Date(b.ngayApDung) - new Date(a.ngayApDung)
       );
       setSalaryHistory(sortedHistory);
       setShowHistoryModal(true);
@@ -288,7 +288,7 @@ const EmployeesPage = () => {
       NV_USERNAME: employee.NV_USERNAME || '',
       NV_PASSWORD: employee.NV_PASSWORD || '',
       NV_DIACHI: employee.NV_DIACHI || '',
-      NGACH_ID: employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id || '/',
+      NGACH_ID: employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id || '',
       BAC_ID: employee.latestChiTietBacLuong?.bac_ID?.id || '',
     });
     if (employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id) {
@@ -418,7 +418,7 @@ const EmployeesPage = () => {
                     Xóa
                   </Button>
                   <Button
-                    variant="success"
+                    variant="success" // Đổi thành màu xanh lá
                     onClick={() => handleShowHistory(emp.NV_ID)}
                   >
                     <FiList /> Lịch sử
@@ -729,6 +729,7 @@ const EmployeesPage = () => {
               </thead>
               <tbody>
                 {salaryHistory.map((history, index) => {
+                  const isCurrent = index === 0; // Bản ghi mới nhất là "Hiện tại"
                   const startDate = new Date(
                     history.ngayApDung
                   ).toLocaleDateString();
@@ -738,7 +739,9 @@ const EmployeesPage = () => {
                           salaryHistory[index + 1].ngayApDung
                         ).toLocaleDateString()
                       : 'Hiện tại';
-                  const status = `${startDate} - ${endDate}`;
+                  const status = isCurrent
+                    ? 'Hiện tại'
+                    : `${startDate} - ${endDate}`;
                   return (
                     <tr key={history.id}>
                       <td className="text-center">

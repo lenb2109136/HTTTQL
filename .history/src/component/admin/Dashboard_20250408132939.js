@@ -52,18 +52,14 @@ const AdminDashboard = () => {
     ungLuongCount: 0,
     khieuNaiCount: 0,
   });
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()); // For "Tổng lương theo tháng"
-  const [selectedMonthYear, setSelectedMonthYear] = useState({
-    month: new Date().getMonth() + 1,
-    year: new Date().getFullYear(),
-  }); // For "Tổng lương theo phòng ban" and "Tỷ lệ khấu trừ và thu nhập"
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()); // Default to current year
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Default to current month (1-12)
   const [availableYears, setAvailableYears] = useState([]); // List of years with data
-  const [monthYearOptions, setMonthYearOptions] = useState([]); // List of month-year combinations
 
   useEffect(() => {
     fetchStats();
     fetchChartData();
-  }, [selectedYear, selectedMonthYear]); // Re-fetch data when year or month-year changes
+  }, [selectedYear, selectedMonth]); // Re-fetch data when year or month changes
 
   const fetchStats = async () => {
     try {
@@ -100,40 +96,13 @@ const AdminDashboard = () => {
         khieuNaiCount: Array.isArray(khieuNaiData) ? khieuNaiData.length : 0,
       });
 
-      // Extract available years and month-year combinations from phieuLuongData
+      // Extract available years from phieuLuongData for the dropdown
       const years = [
         ...new Set(
           phieuLuongData.map(item => new Date(item.ngayPhat).getFullYear())
         ),
       ].sort();
       setAvailableYears(years);
-
-      const monthYearSet = new Set();
-      phieuLuongData.forEach(item => {
-        const date = new Date(item.ngayPhat);
-        const month = date.getMonth() + 1;
-        const year = date.getFullYear();
-        monthYearSet.add(`${month}-${year}`);
-      });
-      const monthYearArray = [...monthYearSet]
-        .map(item => {
-          const [month, year] = item.split('-').map(Number);
-          return { month, year };
-        })
-        .sort((a, b) => {
-          if (a.year === b.year) return a.month - b.month;
-          return a.year - b.year;
-        });
-      setMonthYearOptions(monthYearArray);
-
-      // Set default month-year to the most recent one
-      if (monthYearArray.length > 0) {
-        const mostRecent = monthYearArray[monthYearArray.length - 1];
-        setSelectedMonthYear({
-          month: mostRecent.month,
-          year: mostRecent.year,
-        });
-      }
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
@@ -154,17 +123,14 @@ const AdminDashboard = () => {
       );
       const nhanVienData = await nhanVienResponse.json();
 
-      // Filter phieuLuongData by selected month and year for "Tổng lương theo phòng ban" and "Tỷ lệ khấu trừ và thu nhập"
-      const filteredByMonthYear = phieuLuongData.filter(item => {
+      // Filter phieuLuongData by selected month for "Tổng lương theo phòng ban" and "Tỷ lệ khấu trừ và thu nhập"
+      const filteredByMonth = phieuLuongData.filter(item => {
         const date = new Date(item.ngayPhat);
-        return (
-          date.getMonth() + 1 === selectedMonthYear.month &&
-          date.getFullYear() === selectedMonthYear.year
-        );
+        return date.getMonth() + 1 === selectedMonth;
       });
 
-      // 1. Total Salary by Department (Bar Chart) - Filtered by Month and Year
-      const salaryByDepartment = filteredByMonthYear.reduce((acc, item) => {
+      // 1. Total Salary by Department (Bar Chart) - Filtered by Month
+      const salaryByDepartment = filteredByMonth.reduce((acc, item) => {
         const deptName = item?.nvId?.PB_ID?.PB_TEN || 'Không xác định';
         acc[deptName] = (acc[deptName] || 0) + (item.luongNhan || 0);
         return acc;
@@ -197,7 +163,7 @@ const AdminDashboard = () => {
             legend: { position: 'top' },
             title: {
               display: true,
-              text: `Tổng lương theo phòng ban (Tháng ${selectedMonthYear.month}/${selectedMonthYear.year})`,
+              text: `Tổng lương theo phòng ban (Tháng ${selectedMonth})`,
             },
             datalabels: {
               anchor: 'end',
@@ -210,12 +176,12 @@ const AdminDashboard = () => {
         },
       });
 
-      // 2. Deduction Ratio (Pie Chart) - Filtered by Month and Year
-      const totalIncome = filteredByMonthYear.reduce(
+      // 2. Deduction Ratio (Pie Chart) - Filtered by Month
+      const totalIncome = filteredByMonth.reduce(
         (sum, item) => sum + (item.tongThuNhap || 0),
         0
       );
-      const totalDeduction = filteredByMonthYear.reduce(
+      const totalDeduction = filteredByMonth.reduce(
         (sum, item) => sum + (item.tongKhauTru || 0),
         0
       );
@@ -239,7 +205,7 @@ const AdminDashboard = () => {
             legend: { position: 'top' },
             title: {
               display: true,
-              text: `Tỷ lệ khấu trừ và thu nhập (Tháng ${selectedMonthYear.month}/${selectedMonthYear.year})`,
+              text: `Tỷ lệ khấu trừ và thu nhập (Tháng ${selectedMonth})`,
             },
             tooltip: {
               enabled: true,
@@ -271,7 +237,7 @@ const AdminDashboard = () => {
         },
       });
 
-      // 3. Employee Count by Department (Doughnut Chart) - Not filtered
+      // 3. Employee Count by Department (Doughnut Chart) - Not filtered by month
       const employeeByDepartment = nhanVienData.reduce((acc, item) => {
         const deptName = item?.PB_ID?.PB_TEN || 'Không xác định';
         acc[deptName] = (acc[deptName] || 0) + 1;
@@ -308,7 +274,7 @@ const AdminDashboard = () => {
         },
       });
 
-      // 4. Salary vs Deduction by Department (Grouped Bar Chart) - Not filtered
+      // 4. Salary vs Deduction by Department (Grouped Bar Chart) - Not filtered by month
       const salaryVsDeduction = phieuLuongData.reduce((acc, item) => {
         const deptName = item?.nvId?.PB_ID?.PB_TEN || 'Không xác định';
         acc[deptName] = {
@@ -365,7 +331,7 @@ const AdminDashboard = () => {
         },
       });
 
-      // 5. Total Payroll Cost Over Time (Line Chart) - Not filtered
+      // 5. Total Payroll Cost Over Time (Line Chart) - Not filtered by month
       const monthlyPayroll = phieuLuongData.reduce((acc, item) => {
         const date = new Date(item.ngayPhat).toLocaleString('default', {
           month: 'short',
@@ -489,11 +455,6 @@ const AdminDashboard = () => {
     value => value > 0
   );
 
-  // Check if there is data for the selected month-year in "Tổng lương theo phòng ban" and "Tỷ lệ khấu trừ và thu nhập"
-  const hasDataForSelectedMonthYear = totalSalaryData?.datasets[0]?.data.some(
-    value => value > 0
-  );
-
   return (
     <Container fluid className="p-4 bg-light min-vh-100">
       <h1 className="text-center my-4 text-gray-800">
@@ -567,25 +528,19 @@ const AdminDashboard = () => {
 
       {/* Charts */}
       <Row className="g-4">
-        {/* Month-Year Selection Dropdown for "Tổng lương theo phòng ban" and "Tỷ lệ khấu trừ và thu nhập" */}
+        {/* Month Selection Dropdown for "Tổng lương theo phòng ban" and "Tỷ lệ khấu trừ và thu nhập" */}
         <Col md={12} className="mb-3">
-          <Form.Group controlId="monthYearSelect">
-            <Form.Label>Chọn tháng và năm:</Form.Label>
+          <Form.Group controlId="monthSelect">
+            <Form.Label>Chọn tháng:</Form.Label>
             <Form.Control
               as="select"
-              value={`${selectedMonthYear.month}-${selectedMonthYear.year}`}
-              onChange={e => {
-                const [month, year] = e.target.value.split('-').map(Number);
-                setSelectedMonthYear({ month, year });
-              }}
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(parseInt(e.target.value))}
               style={{ width: '200px' }}
             >
-              {monthYearOptions.map(option => (
-                <option
-                  key={`${option.month}-${option.year}`}
-                  value={`${option.month}-${option.year}`}
-                >
-                  Tháng {option.month}/{option.year}
+              {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                <option key={month} value={month}>
+                  Tháng {month}
                 </option>
               ))}
             </Form.Control>
@@ -593,76 +548,68 @@ const AdminDashboard = () => {
         </Col>
 
         {/* Biểu đồ Tổng lương theo phòng ban */}
-        {hasDataForSelectedMonthYear && (
-          <Col md={12}>
-            <Card className="shadow border-0 rounded-3 chart-card h-100">
-              <Card.Header className="py-3 bg-white border-bottom">
-                <h6 className="m-0 stat-title text-primary">
-                  Tổng lương theo phòng ban (Tháng {selectedMonthYear.month}/
-                  {selectedMonthYear.year})
-                </h6>
-              </Card.Header>
-              <Card.Body className="chart-body">
-                {totalSalaryData ? (
-                  <Bar
-                    data={totalSalaryData}
-                    options={totalSalaryData.options}
-                    height={300}
-                  />
-                ) : (
-                  <p>Đang tải...</p>
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
-        )}
+        <Col md={12}>
+          <Card className="shadow border-0 rounded-3 chart-card h-100">
+            <Card.Header className="py-3 bg-white border-bottom">
+              <h6 className="m-0 stat-title text-primary">
+                Tổng lương theo phòng ban (Tháng {selectedMonth})
+              </h6>
+            </Card.Header>
+            <Card.Body className="chart-body">
+              {totalSalaryData ? (
+                <Bar
+                  data={totalSalaryData}
+                  options={totalSalaryData.options}
+                  height={300}
+                />
+              ) : (
+                <p>Đang tải...</p>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
 
         {/* Hai biểu đồ tròn trong cùng một hàng */}
-        <Row>
-          {hasDataForSelectedMonthYear && (
-            <Col md={6}>
-              <Card className="shadow border-0 rounded-3 chart-card h-100">
-                <Card.Header className="py-3 bg-white border-bottom">
-                  <h6 className="m-0 stat-title text-primary">
-                    Tỷ lệ khấu trừ và thu nhập (Tháng {selectedMonthYear.month}/
-                    {selectedMonthYear.year})
-                  </h6>
-                </Card.Header>
-                <Card.Body className="chart-body">
-                  {deductionRatioData ? (
-                    <Pie
-                      data={deductionRatioData}
-                      options={deductionRatioData.options}
-                      height={300}
-                    />
-                  ) : (
-                    <p>Đang tải...</p>
-                  )}
-                </Card.Body>
-              </Card>
-            </Col>
-          )}
-          <Col md={6}>
-            <Card className="shadow border-0 rounded-3 chart-card h-100">
-              <Card.Header className="py-3 bg-white border-bottom">
-                <h6 className="m-0 stat-title text-primary">
-                  Số nhân viên theo phòng ban
-                </h6>
-              </Card.Header>
-              <Card.Body className="chart-body">
-                {employeeCountData ? (
-                  <Doughnut
-                    data={employeeCountData}
-                    options={employeeCountData.options}
-                    height={300}
-                  />
-                ) : (
-                  <p>Đang tải...</p>
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+        <Col md={6}>
+          <Card className="shadow border-0 rounded-3 chart-card h-100">
+            <Card.Header className="py-3 bg-white border-bottom">
+              <h6 className="m-0 stat-title text-primary">
+                Tỷ lệ khấu trừ và thu nhập (Tháng {selectedMonth})
+              </h6>
+            </Card.Header>
+            <Card.Body className="chart-body">
+              {deductionRatioData ? (
+                <Pie
+                  data={deductionRatioData}
+                  options={deductionRatioData.options}
+                  height={300}
+                />
+              ) : (
+                <p>Đang tải...</p>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={6}>
+          <Card className="shadow border-0 rounded-3 chart-card h-100">
+            <Card.Header className="py-3 bg-white border-bottom">
+              <h6 className="m-0 stat-title text-primary">
+                Số nhân viên theo phòng ban
+              </h6>
+            </Card.Header>
+            <Card.Body className="chart-body">
+              {employeeCountData ? (
+                <Doughnut
+                  data={employeeCountData}
+                  options={employeeCountData.options}
+                  height={300}
+                />
+              ) : (
+                <p>Đang tải...</p>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
 
         {/* Biểu đồ Tổng chi phí lương theo thời gian */}
         <Col md={12}>
