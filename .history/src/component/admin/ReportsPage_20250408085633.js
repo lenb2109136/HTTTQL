@@ -36,7 +36,29 @@ const ComplaintsPage = () => {
   const fetchComplaints = async () => {
     try {
       const response = await axios.get(`${API_URL}/khieu-nai`);
-      setComplaints(response.data);
+      const complaintsWithAdvance = await Promise.all(
+        response.data.map(async complaint => {
+          try {
+            const advanceResponse = await axios.get(
+              `${API_URL}/ung-luong/nhan-vien/${complaint.nv_ID}`
+            );
+            return {
+              ...complaint,
+              advanceStatus:
+                advanceResponse.data.length > 0
+                  ? advanceResponse.data[0]
+                  : null,
+            };
+          } catch (error) {
+            console.error(
+              `Lỗi khi lấy trạng thái ứng lương cho nhân viên ${complaint.nv_ID}:`,
+              error
+            );
+            return { ...complaint, advanceStatus: null };
+          }
+        })
+      );
+      setComplaints(complaintsWithAdvance);
     } catch (error) {
       console.error('Error fetching complaints:', error);
       toast.error('Không thể tải danh sách khiếu nại.');
@@ -61,7 +83,7 @@ const ComplaintsPage = () => {
     setFormData({
       kn_NOIDUNG: complaint.kn_NOIDUNG,
       kn_NGAYKN: new Date(complaint.kn_NGAYKN).toISOString().slice(0, 16),
-      nv_ID: complaint.nv_ID.nv_ID, // Lấy nv_ID từ đối tượng NhanVien
+      nv_ID: complaint.nv_ID,
     });
     setShowModal(true);
   };
@@ -78,7 +100,7 @@ const ComplaintsPage = () => {
       const requestData = {
         kn_NOIDUNG: formData.kn_NOIDUNG,
         kn_NGAYKN: new Date(formData.kn_NGAYKN).toISOString(),
-        nv_ID: { nv_ID: parseInt(formData.nv_ID) }, // Gửi đúng định dạng cho backend
+        nv_ID: parseInt(formData.nv_ID),
       };
       if (selectedComplaint) {
         await axios.put(
@@ -101,6 +123,7 @@ const ComplaintsPage = () => {
   const handleResponseSubmit = async e => {
     e.preventDefault();
     try {
+      // Gửi phản hồi qua API (giả định có endpoint /khieu-nai/{id}/respond)
       await axios.post(
         `${API_URL}/khieu-nai/${selectedComplaint.kn_ID}/respond`,
         {
@@ -110,7 +133,7 @@ const ComplaintsPage = () => {
       );
       toast.success('Phản hồi đã được gửi qua email!');
       setShowResponseModal(false);
-      fetchComplaints(); // Làm mới danh sách khiếu nại
+      fetchComplaints();
     } catch (error) {
       console.error('Error sending response:', error);
       toast.error('Lỗi khi gửi phản hồi.');
@@ -139,6 +162,12 @@ const ComplaintsPage = () => {
       <Row className="mb-3 d-flex justify-content-between align-items-center">
         <Col>
           <h2>Danh sách khiếu nại</h2>
+        </Col>
+        <Col
+          className="text /
+
+-end"
+        >
           <Button variant="primary" onClick={() => setShowModal(true)}>
             <FiPlus /> Thêm khiếu nại
           </Button>
@@ -151,7 +180,7 @@ const ComplaintsPage = () => {
             <th>Tên Nhân Viên</th>
             <th>Nội Dung</th>
             <th>Ngày Khiếu Nại</th>
-            <th>Trạng Thái</th>
+            <th>Trạng Thái Ứng Lương</th>
             <th>Thao tác</th>
           </tr>
         </thead>
@@ -159,10 +188,16 @@ const ComplaintsPage = () => {
           {complaints.map((complaint, index) => (
             <tr key={complaint.kn_ID}>
               <td>{index + 1}</td>
-              <td>{complaint.nv_ID?.NV_HOTEN || 'N/A'}</td>
+              <td>{complaint.nv_ID?.nv_HOTEN || 'N/A'}</td>
               <td>{complaint.kn_NOIDUNG}</td>
               <td>{new Date(complaint.kn_NGAYKN).toLocaleDateString()}</td>
-              <td>{complaint.kn_TRANGTHAI}</td>
+              <td>
+                {complaint.advanceStatus
+                  ? `${complaint.advanceStatus.ul_TRANGTHAI} (${new Date(
+                      complaint.advanceStatus.ul_NGAYUL
+                    ).toLocaleDateString()})`
+                  : 'Chưa ứng lương'}
+              </td>
               <td>
                 <Button
                   variant="warning"
@@ -178,14 +213,12 @@ const ComplaintsPage = () => {
                 >
                   <FiTrash2 /> Xóa
                 </Button>
-                {complaint.kn_TRANGTHAI !== 'Đã xử lý' && (
-                  <Button
-                    variant="success"
-                    onClick={() => handleResponse(complaint)}
-                  >
-                    <FiMessageSquare /> Phản hồi
-                  </Button>
-                )}
+                <Button
+                  variant="success"
+                  onClick={() => handleResponse(complaint)}
+                >
+                  <FiMessageSquare /> Phản hồi
+                </Button>
               </td>
             </tr>
           ))}

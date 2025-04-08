@@ -22,7 +22,7 @@ const EmployeesPage = () => {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [historyEmployeeId, setHistoryEmployeeId] = useState(null);
-  const [salaryHistory, setSalaryHistory] = useState([]);
+  const [salaryHistory, setSalaryHistory] = useState(null);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [formData, setFormData] = useState({
     NV_HOTEN: '',
@@ -138,14 +138,10 @@ const EmployeesPage = () => {
   const fetchSalaryHistory = async employeeId => {
     try {
       const response = await axios.get(
-        `${API_URL}/chi-tiet-bac-luong/nhan-vien/${employeeId}`
+        `${API_URL}/chi-tiet-bac-luong/nhan-vien/${employeeId}/latest`
       );
       console.log('Lịch sử bậc lương:', response.data);
-      // Sắp xếp theo ngày áp dụng tăng dần (cũ nhất lên đầu)
-      const sortedHistory = response.data.sort(
-        (a, b) => new Date(a.ngayApDung) - new Date(b.ngayApDung)
-      );
-      setSalaryHistory(sortedHistory);
+      setSalaryHistory(response.data);
       setShowHistoryModal(true);
     } catch (error) {
       console.error('Lỗi khi lấy lịch sử bậc lương:', error);
@@ -288,7 +284,7 @@ const EmployeesPage = () => {
       NV_USERNAME: employee.NV_USERNAME || '',
       NV_PASSWORD: employee.NV_PASSWORD || '',
       NV_DIACHI: employee.NV_DIACHI || '',
-      NGACH_ID: employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id || '/',
+      NGACH_ID: employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id || '',
       BAC_ID: employee.latestChiTietBacLuong?.bac_ID?.id || '',
     });
     if (employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id) {
@@ -343,7 +339,7 @@ const EmployeesPage = () => {
 
   const handleCloseHistoryModal = () => {
     setShowHistoryModal(false);
-    setSalaryHistory([]);
+    setSalaryHistory(null);
     setHistoryEmployeeId(null);
   };
 
@@ -418,7 +414,7 @@ const EmployeesPage = () => {
                     Xóa
                   </Button>
                   <Button
-                    variant="success"
+                    variant="info"
                     onClick={() => handleShowHistory(emp.NV_ID)}
                   >
                     <FiList /> Lịch sử
@@ -707,55 +703,32 @@ const EmployeesPage = () => {
       </Modal>
 
       {/* Modal xem lịch sử bậc lương */}
-      <Modal
-        show={showHistoryModal}
-        onHide={handleCloseHistoryModal}
-        centered
-        size="lg"
-      >
-        <Modal.Header closeButton className="bg-success text-white">
+      <Modal show={showHistoryModal} onHide={handleCloseHistoryModal} centered>
+        <Modal.Header closeButton>
           <Modal.Title>Lịch sử bậc lương</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {salaryHistory.length > 0 ? (
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th className="text-center">Ngạch lương</th>
-                  <th className="text-center">Bậc lương</th>
-                  <th className="text-center">Hệ số</th>
-                  <th className="text-center">Trạng thái</th>
-                </tr>
-              </thead>
-              <tbody>
-                {salaryHistory.map((history, index) => {
-                  const startDate = new Date(
-                    history.ngayApDung
-                  ).toLocaleDateString();
-                  const endDate =
-                    index < salaryHistory.length - 1
-                      ? new Date(
-                          salaryHistory[index + 1].ngayApDung
-                        ).toLocaleDateString()
-                      : 'Hiện tại';
-                  const status = `${startDate} - ${endDate}`;
-                  return (
-                    <tr key={history.id}>
-                      <td className="text-center">
-                        {history.bac_ID?.ngachLuong?.ten || 'N/A'}
-                      </td>
-                      <td className="text-center">
-                        {history.bac_ID?.ten || 'N/A'}
-                      </td>
-                      <td className="text-center">
-                        {history.bac_ID?.heSo || 'N/A'}
-                      </td>
-                      <td className="text-center">{status}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </Table>
+          {salaryHistory ? (
+            <div>
+              <p>
+                <strong>Họ tên:</strong>{' '}
+                {salaryHistory.nv_ID?.NV_HOTEN || 'N/A'}
+              </p>
+              <p>
+                <strong>Ngạch lương:</strong>{' '}
+                {salaryHistory.bac_ID?.ngachLuong?.ten || 'N/A'}
+              </p>
+              <p>
+                <strong>Bậc lương:</strong> {salaryHistory.bac_ID?.ten || 'N/A'}
+              </p>
+              <p>
+                <strong>Hệ số:</strong> {salaryHistory.bac_ID?.heSo || 'N/A'}
+              </p>
+              <p>
+                <strong>Ngày áp dụng:</strong>{' '}
+                {new Date(salaryHistory.ngayApDung).toLocaleString() || 'N/A'}
+              </p>
+            </div>
           ) : (
             <p>Không có dữ liệu lịch sử bậc lương.</p>
           )}

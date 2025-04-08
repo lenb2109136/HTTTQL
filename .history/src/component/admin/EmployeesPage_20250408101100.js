@@ -10,7 +10,7 @@ import {
   Alert,
   InputGroup,
 } from 'react-bootstrap';
-import { FiPlus, FiEye, FiEyeOff, FiList } from 'react-icons/fi';
+import { FiPlus, FiEye, FiEyeOff } from 'react-icons/fi';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -19,10 +19,7 @@ const EmployeesPage = () => {
   const [employees, setEmployees] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
-  const [historyEmployeeId, setHistoryEmployeeId] = useState(null);
-  const [salaryHistory, setSalaryHistory] = useState([]);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [formData, setFormData] = useState({
     NV_HOTEN: '',
@@ -135,27 +132,6 @@ const EmployeesPage = () => {
     }
   };
 
-  const fetchSalaryHistory = async employeeId => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/chi-tiet-bac-luong/nhan-vien/${employeeId}`
-      );
-      console.log('Lịch sử bậc lương:', response.data);
-      // Sắp xếp theo ngày áp dụng tăng dần (cũ nhất lên đầu)
-      const sortedHistory = response.data.sort(
-        (a, b) => new Date(a.ngayApDung) - new Date(b.ngayApDung)
-      );
-      setSalaryHistory(sortedHistory);
-      setShowHistoryModal(true);
-    } catch (error) {
-      console.error('Lỗi khi lấy lịch sử bậc lương:', error);
-      toast.error(
-        'Không thể tải lịch sử bậc lương: ' +
-          (error.response?.data?.message || error.message)
-      );
-    }
-  };
-
   const handleDelete = id => {
     console.log('Chuẩn bị xóa nhân viên ID:', id);
     setDeleteId(id);
@@ -173,15 +149,12 @@ const EmployeesPage = () => {
     } catch (error) {
       console.error('Lỗi khi xóa nhân viên:', error);
       const errorMessage = error.response?.data?.message || error.message;
-      const employeeName =
-        employees.find(emp => emp.NV_ID === deleteId)?.NV_HOTEN ||
-        'Không xác định';
       if (errorMessage.includes('foreign key constraint fails')) {
         toast.error(
-          `Nhân viên (${employeeName}) còn dữ liệu ở các bảng khác nên không thể xóa!`
+          'Không thể xóa nhân viên vì nhân viên này đang được tham chiếu trong dữ liệu khác (ví dụ: chi tiết bậc lương, ứng lương).'
         );
       } else {
-        toast.error(`Lỗi khi xóa nhân viên (${employeeName}): ${errorMessage}`);
+        toast.error('Không thể xóa nhân viên: ' + errorMessage);
       }
       setShowDeleteModal(false);
     }
@@ -229,12 +202,14 @@ const EmployeesPage = () => {
       let newEmployeeId;
 
       if (editingEmployee) {
+        // Cập nhật nhân viên hiện có
         await axios.put(
           `${API_URL}/nhanvien/${editingEmployee.NV_ID}`,
           payload
         );
         newEmployeeId = editingEmployee.NV_ID;
 
+        // Cập nhật chi tiết bậc lương
         if (formData.BAC_ID) {
           await axios.post(`${API_URL}/chi-tiet-bac-luong`, null, {
             params: {
@@ -245,12 +220,14 @@ const EmployeesPage = () => {
         }
         toast.success('Đã sửa thông tin nhân viên thành công!');
       } else {
+        // Thêm mới nhân viên
         const newEmployeeResponse = await axios.post(
           `${API_URL}/nhanvien`,
           payload
         );
         newEmployeeId = newEmployeeResponse.data.NV_ID;
 
+        // Thêm chi tiết bậc lương cho nhân viên mới
         if (formData.BAC_ID) {
           await axios.post(`${API_URL}/chi-tiet-bac-luong`, null, {
             params: {
@@ -259,7 +236,7 @@ const EmployeesPage = () => {
             },
           });
         }
-        toast.success('Đã thêm nhân viên thành công!');
+        toast.success('Đã thêm nhân viên thành công!'); // Chỉ hiển thị thông báo này
       }
 
       setShowModal(false);
@@ -282,13 +259,13 @@ const EmployeesPage = () => {
       NV_HOTEN: employee.NV_HOTEN || '',
       PB_ID: employee.PB_ID?.PB_ID || '',
       NV_NGAYSINH: employee.NV_NGAYSINH || '',
-      NV_GIOITINH: employee.NV_GIOITINH === 1,
+      NV_GIOITINH: employee.NV_GIOITINH === 1, // Chuyển đổi từ 1/0 sang true/false
       NV_EMAIL: employee.NV_EMAIL || '',
       NV_SDT: employee.NV_SDT || '',
       NV_USERNAME: employee.NV_USERNAME || '',
       NV_PASSWORD: employee.NV_PASSWORD || '',
       NV_DIACHI: employee.NV_DIACHI || '',
-      NGACH_ID: employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id || '/',
+      NGACH_ID: employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id || '',
       BAC_ID: employee.latestChiTietBacLuong?.bac_ID?.id || '',
     });
     if (employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id) {
@@ -297,11 +274,6 @@ const EmployeesPage = () => {
     setErrors({});
     setShowPassword(false);
     setShowModal(true);
-  };
-
-  const handleShowHistory = employeeId => {
-    setHistoryEmployeeId(employeeId);
-    fetchSalaryHistory(employeeId);
   };
 
   const resetForm = () => {
@@ -327,7 +299,7 @@ const EmployeesPage = () => {
     const ngachId = e.target.value;
     setFormData({ ...formData, NGACH_ID: ngachId, BAC_ID: '' });
     if (ngachId) fetchBacLuongs(ngachId);
-    else setBacLuongs([]);
+    else setBacLuongs([]); // Reset bậc lương nếu không chọn ngạch
   };
 
   const handleCloseModal = () => {
@@ -339,12 +311,6 @@ const EmployeesPage = () => {
   const handleCloseDeleteModal = () => {
     setShowDeleteModal(false);
     setDeleteId(null);
-  };
-
-  const handleCloseHistoryModal = () => {
-    setShowHistoryModal(false);
-    setSalaryHistory([]);
-    setHistoryEmployeeId(null);
   };
 
   const toggleShowPassword = () => {
@@ -412,16 +378,9 @@ const EmployeesPage = () => {
                   </Button>
                   <Button
                     variant="danger"
-                    className="me-2"
                     onClick={() => handleDelete(emp.NV_ID)}
                   >
                     Xóa
-                  </Button>
-                  <Button
-                    variant="success"
-                    onClick={() => handleShowHistory(emp.NV_ID)}
-                  >
-                    <FiList /> Lịch sử
                   </Button>
                 </td>
               </tr>
@@ -702,67 +661,6 @@ const EmployeesPage = () => {
           </Button>
           <Button variant="danger" onClick={confirmDelete}>
             Xóa
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Modal xem lịch sử bậc lương */}
-      <Modal
-        show={showHistoryModal}
-        onHide={handleCloseHistoryModal}
-        centered
-        size="lg"
-      >
-        <Modal.Header closeButton className="bg-success text-white">
-          <Modal.Title>Lịch sử bậc lương</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {salaryHistory.length > 0 ? (
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th className="text-center">Ngạch lương</th>
-                  <th className="text-center">Bậc lương</th>
-                  <th className="text-center">Hệ số</th>
-                  <th className="text-center">Trạng thái</th>
-                </tr>
-              </thead>
-              <tbody>
-                {salaryHistory.map((history, index) => {
-                  const startDate = new Date(
-                    history.ngayApDung
-                  ).toLocaleDateString();
-                  const endDate =
-                    index < salaryHistory.length - 1
-                      ? new Date(
-                          salaryHistory[index + 1].ngayApDung
-                        ).toLocaleDateString()
-                      : 'Hiện tại';
-                  const status = `${startDate} - ${endDate}`;
-                  return (
-                    <tr key={history.id}>
-                      <td className="text-center">
-                        {history.bac_ID?.ngachLuong?.ten || 'N/A'}
-                      </td>
-                      <td className="text-center">
-                        {history.bac_ID?.ten || 'N/A'}
-                      </td>
-                      <td className="text-center">
-                        {history.bac_ID?.heSo || 'N/A'}
-                      </td>
-                      <td className="text-center">{status}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </Table>
-          ) : (
-            <p>Không có dữ liệu lịch sử bậc lương.</p>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseHistoryModal}>
-            Đóng
           </Button>
         </Modal.Footer>
       </Modal>

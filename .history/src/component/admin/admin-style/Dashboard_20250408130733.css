@@ -1,0 +1,114 @@
+/* Background Color */
+.bg-light {
+  background-color: #f8f9fc !important;
+}
+
+/* Border Colors for Cards */
+.border-left-primary {
+  border-left: 0.25rem solid #4e73df !important;
+}
+.border-left-success {
+  border-left: 0.25rem solid #1cc88a !important;
+}
+.border-left-info {
+  border-left: 0.25rem solid #36b9cc !important;
+}
+.border-left-warning {
+  border-left: 0.25rem solid #f6c23e !important;
+}
+.border-left-danger {
+  border-left: 0.25rem solid #e74a3b !important;
+}
+
+/* Text Colors */
+.text-gray-800 {
+  color: #2e2f3e !important;
+}
+.text-gray-600 {
+  color: #6c757d !important;
+}
+.text-primary {
+  color: #4e73df !important;
+}
+
+/* Shadows */
+.shadow-sm {
+  box-shadow: 0 0.1rem 0.5rem rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Stat Card Styling */
+.stat-card {
+  transition: transform 0.2s ease-in-out;
+  width: 100%;
+  min-height: 80px; /* Reduced height for compactness */
+  display: flex;
+  align-items: center;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+}
+
+/* Stat Title (Quick Stats and Chart Titles) */
+.stat-title {
+  font-size: 0.9rem; /* Smaller font size for compactness */
+  font-weight: 500;
+  letter-spacing: 0.05rem;
+  line-height: 1.2; /* Prevent text wrapping issues */
+}
+
+/* Stat Value (Quick Stats) */
+.stat-value {
+  font-size: 0.95rem; /* Slightly smaller font size */
+  font-weight: 600;
+}
+
+/* Chart Card Styling */
+.chart-card {
+  width: 100%;
+  min-height: 400px; /* Keep chart cards consistent */
+}
+
+/* Chart Body */
+.chart-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 300px;
+}
+
+/* Responsive Adjustments for Quick Stats */
+@media (max-width: 1200px) {
+  .row.g-3 > .col-md-4 {
+    flex: 0 0 33.333333%; /* 3 cards per row on medium screens */
+    max-width: 33.333333%;
+  }
+}
+
+@media (max-width: 768px) {
+  .row.g-3 > .col-sm-6 {
+    flex: 0 0 50%; /* 2 cards per row on small screens */
+    max-width: 50%;
+  }
+}
+
+@media (max-width: 576px) {
+  .row.g-3 > .col-xs-12 {
+    flex: 0 0 100%; /* 1 card per row on extra small screens */
+    max-width: 100%;
+  }
+}
+
+/* Responsive Adjustments for Chart Cards */
+@media (max-width: 768px) {
+  .chart-card {
+    min-height: 350px;
+  }
+}
+
+@media (max-width: 576px) {
+  .chart-card {
+    min-height: 300px;
+  }
+}

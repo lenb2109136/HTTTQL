@@ -21,6 +21,7 @@ import Deductions from './component/admin/DeductionsPage';
 
 // Component chứa layout với Sidebar và Header
 function MainLayout() {
+  // Cả /userhome và /emp-salary-advance đều sử dụng layout của nhân viên
   const isEmployeePage =
     window.location.pathname === '/userhome' ||
     window.location.pathname === '/emp-salary-advance' ||
