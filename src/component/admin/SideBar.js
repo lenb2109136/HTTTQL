@@ -60,13 +60,13 @@ const Sidebar = () => {
             <FiChevronRight className="chevron-icon" />
           </Link>
         </li>
-        <li className={location.pathname === '/pay-grade' ? 'active' : ''}>
+        {/* <li className={location.pathname === '/pay-grade' ? 'active' : ''}>
           <Link to="/pay-grade">
             <FiDollarSign className="menu-icon" />
             <span>Bậc lương</span>
             <FiChevronRight className="chevron-icon" />
           </Link>
-        </li>
+        </li> */}
         <li
           className={
             location.pathname === '/salary-calculation' ? 'active' : ''

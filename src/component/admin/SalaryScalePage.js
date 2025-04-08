@@ -204,7 +204,7 @@ const SalaryScalePage = () => {
                 <td>{index + 1}</td>
                 <td>{ngach.ten || 'N/A'}</td>
                 {/* <td>{ngach.maNgach || 'N/A'}</td> */}
-                <td>{ngach.luongCoSo || 0}</td>
+                <td>{Intl.NumberFormat().format(ngach.luongCoSo || 0)}</td>
                 <td>
                   <Button
 
@@ -299,7 +299,7 @@ const SalaryScalePage = () => {
             </Form.Group> */}
 
             <Form.Group className="mb-3">
-                <Form.Label>Hệ số lương</Form.Label>
+                <Form.Label>Lương cơ sở</Form.Label>
                 <Form.Control
                 type="number"
                 step="1000"
@@ -323,7 +323,7 @@ const SalaryScalePage = () => {
                     const formattedDate = today.toISOString().split('T')[0];
                     idchon.current.ngayApDung = formattedDate;
                     console.log(idchon.current)
-                    axios.post("http://localhost:8080/api/ngach-luong",idchon.current)
+                    axios.post("http://localhost:8080/api/ngach-luong/latest",idchon.current)
                     .then((respose)=>{
                         idchon.current={
                             "id": 0,
@@ -403,7 +403,7 @@ const SalaryScalePage = () => {
                 <td>{index + 1}</td>
                 <td>{ngach.ten || 'N/A'}</td>
                 {/* <td>{ngach.maNgach || 'N/A'}</td> */}
-                <td>{ngach.luongCoSo || 0}</td>
+                <td>{Intl.NumberFormat().format(ngach.luongCoSo || 0)}</td>
                 <td>
                 {ngach.ngayApDung || 0}
                 </td>
