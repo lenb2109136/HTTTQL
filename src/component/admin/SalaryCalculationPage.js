@@ -20,29 +20,44 @@ const EmployeesPage = () => {
     const [ngayBatDau, setNgayBatDau] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]);
     const [ngayKetThuc, setNgayKetThuc] = useState(new Date().toISOString().split('T')[0]);
     const [dsluong, setdsluong] = useState([]);
-    const handlePhongBanChange = (event) => setPhongBan(event.target.value);
+    const handlePhongBanChange = (event) => {
+        setPhongBan(event.target.value)
+        axios.get(`http://localhost:8080/api/nhanvien/getluongnhanvienbybophan?nvid=${event.target.value}&nbd=${ngayBatDau}&nkt=${ngayKetThuc}`)
+        .then((data) => {
+            setdsluong(data.data.data);
+        }).catch(() => { });
+    };
     const handlenghachLuongChange = (event) => setnghachLuong(event.target.value);
     const dongduocchon = useRef({})
     const [dsphongBan, setdsPhongBan] = useState([]);
     const [dsnghachLuong, setdsnghachLuong] = useState([]);
+    const handleDownload = () => {
+        const url = `http://localhost:8080/getexcel/getexcel?nvid=${0}&nbd=${ngayBatDau}&nkt=${ngayKetThuc}`;
 
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', '');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
     useEffect(() => {
-        axios.get(`http://localhost:8080/nhanvien/getluongnhanvienbybophan?nvid=0&nbd=${ngayBatDau}&nkt=${ngayKetThuc}`)
+        axios.get(`http://localhost:8080/api/nhanvien/getluongnhanvienbybophan?nvid=0&nbd=${ngayBatDau}&nkt=${ngayKetThuc}`)
             .then((data) => {
                 setdsluong(data.data.data);
             }).catch(() => { });
     }, [ngayBatDau, ngayKetThuc])
 
     useEffect(() => {
-        axios.get("http://localhost:8080/phongban/getPhongBan")
+        axios.get("http://localhost:8080/api/phongban/getPhongBan")
             .then((response) => setdsPhongBan(response.data.data || []))
             .catch(() => console.log("Không lấy được dữ liệu phòng ban"));
 
-        axios.get("http://localhost:8080/nghachluong/getngachluong")
+        axios.get("http://localhost:8080/api/nghachluong/getngachluong")
             .then((response) => setdsnghachLuong(response.data.data || []))
             .catch(() => console.log("Không lấy được dữ liệu nghạch lương"));
 
-        axios.get(`http://localhost:8080/nhanvien/getluongnhanvienbybophan?nvid=0&nbd=&nkt=`)
+        axios.get(`http://localhost:8080/api/nhanvien/getluongnhanvienbybophan?nvid=0&nbd=&nkt=`)
             .then((data) => {
                 setdsluong(data.data.data);
             }).catch(() => { });
@@ -62,36 +77,47 @@ const EmployeesPage = () => {
             <h1 className="text-center my-4">Quản Lý Lương Nhân Sự</h1>
 
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', marginBottom: 3 }}>
-                <FormControl sx={{ minWidth: 200 }}>
-                    <InputLabel id="phong-ban-label">Chọn phòng ban</InputLabel>
-                    <Select
-                        labelId="phong-ban-label"
-                        id="phong-ban-select"
-                        value={phongBan}
-                        onChange={handlePhongBanChange}
-                        displayEmpty
-                        MenuProps={{
-                            PaperProps: {
-                                style: {
-                                    maxHeight: 200,
-                                    overflowY: "auto",
-                                    zIndex: 1300,
-                                },
-                            },
-                        }}
-                    >
-                        <MenuItem value="" disabled>Chọn phòng ban</MenuItem>
-                        {dsphongBan.length > 0 ? (
-                            dsphongBan?.map((data) => (
-                                <MenuItem key={data.pb_ID} value={String(data.pb_ID)}>{data.pb_TEN}</MenuItem>
-                            ))
-                        ) : (
-                            <MenuItem disabled>Không có dữ liệu</MenuItem>
-                        )}
-                    </Select>
-                </FormControl>
+            <FormControl sx={{ minWidth: 200 }}>
+  <InputLabel id="phong-ban-label">Chọn phòng ban</InputLabel>
+  <Select
+    labelId="phong-ban-label"
+    id="phong-ban-select"
+    value={phongBan}
+    onChange={(e)=>{
+        handlePhongBanChange(e)
+    }
+    }
+    displayEmpty
+    MenuProps={{
+      PaperProps: {
+        style: {
+          maxHeight: 200,
+          overflowY: "auto",
+          zIndex: 1300,
+          backgroundColor: 'white',
+          color: 'black',
+        },
+      },
+    }}
+  >
+    {dsphongBan.length > 0 ? (
+      dsphongBan.map((data) => (
+        <MenuItem
+          key={data.pb_ID+"pb"}
+          value={String(data.pb_ID)}
+          sx={{ color: 'black' }}
+        >
+          {data.PB_TEN}
+        </MenuItem>
+      ))
+    ) : (
+      <MenuItem disabled>Không có dữ liệu</MenuItem>
+    )}
+  </Select>
+</FormControl>
 
-                <FormControl sx={{ minWidth: 200 }}>
+
+                {/* <FormControl sx={{ minWidth: 200 }}>
                     <InputLabel id="nghach-luong-label">Chọn nghạch lương</InputLabel>
                     <Select labelId="nghach-luong-label" id="nghach-luong-select" value={nghachLuong} onChange={handlenghachLuongChange}>
                         {dsnghachLuong.length > 0 ? (
@@ -102,7 +128,7 @@ const EmployeesPage = () => {
                             <MenuItem disabled>Không có dữ liệu</MenuItem>
                         )}
                     </Select>
-                </FormControl>
+                </FormControl> */}
 
                 <TextField type="date" label="Ngày bắt đầu" value={ngayBatDau} onChange={(e) => setNgayBatDau(e.target.value)} />
                 <TextField type="date" label="Ngày kết thúc" value={ngayKetThuc} onChange={(e) => setNgayKetThuc(e.target.value)} />
@@ -139,13 +165,13 @@ const EmployeesPage = () => {
                     }}>
                         <FiPlus /> Gửi Thông tin lương đến nhân viên
                     </Button>
-                    <a href="http://localhost:8080/getexcel/getexcel?nvid=0&nbd=2025-04-01&nkt=2025-04-02" id="myLink" download></a>
+                    <a id="myLink" download></a>
 
 
 
-                    <Button style={{ marginLeft: "30px", marginTop: "20px" }} variant="primary" onClick={() => {
-                        document.getElementById("myLink").click()
-                    }}>
+                    <Button style={{ marginLeft: "30px", marginTop: "20px" }} variant="primary"
+                        onClick={handleDownload}
+                    >
                         <FiPlus /> Xuất bảng tính
                     </Button>
                 </Col>
@@ -292,15 +318,17 @@ const EmployeesPage = () => {
                     variant="outlined"
                     multiline
                     rows={3}
-                    
+
                     sx={{ marginBottom: 2 }}
                 />
 
                 </Modal.Body>
                 <Button style={{backgroundColor:"#0d6efd",color:"white"}} onClick={() => {
                     dsluong.forEach((f) => {
+                        console.log(f)
+                        console.log("EMAIL NHÂN VIÊN LÀ: "+f.thongtinnhanvien.NV_EMAIL)
                         let form = new FormData()
-                        form.append("email", f?.thongtinnhanvien?.nv_EMAIL)
+                        form.append("email", f.thongtinnhanvien.NV_EMAIL)
                         form.append("tieude", document.getElementById("tieude").value)
                         form.append("noidung", document.getElementById("noidung").value)
                         form.append("map", JSON.stringify(f))
