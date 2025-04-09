@@ -35,8 +35,10 @@ const EmployeesPage = () => {
     const [load, setload] = useState(false)
     const [showModal, setShowModal] = useState(false);
     const [showModal3, setShowModal3] = useState(false);
-    const [opena, setOpena] = useState(true)
+    const [opena, setOpena] = useState(false)
     const not = useRef(false)
+   
+
     const handleModalOpen3 = (data) => {
         setShowModal3(true)
     };
@@ -192,8 +194,8 @@ const EmployeesPage = () => {
 
             {/* Tabs của MUI */}
             <Tabs value={tabValue} onChange={handleChangeTab} aria-label="tab">
-                <Tab label="Danh sách nhân viên" />
-                <Tab label="Danh sách Khấu trừ" />
+                <Tab label="Khấu trừ thường niên" />
+                <Tab label="Khấu trừ phát sinh" />
             </Tabs>
 
             {/* Nội dung của từng tab */}
@@ -316,6 +318,8 @@ const EmployeesPage = () => {
                     </div>
                 )}
             </Box>
+            
+
 
             {/* Modal for creating new Khấu trừ */}
             <Modal show={showModal} onHide={() => setShowModal(false)}>
@@ -408,8 +412,8 @@ const EmployeesPage = () => {
                         }}>
                             <option value="0">Chọn phòng ban</option>
                             {danhsachphongban.map((pb) => (
-                                <option style={{color:"black"}} key={pb.pb_ID} value={pb.pb_ID}>
-                                    {pb.pb_TEN}
+                                <option style={{color:"black"}} key={pb.PB_ID} value={pb.PB_ID}>
+                                    {pb.PB_TEN}
                                 </option>
                             ))}
                         </Form.Select>
@@ -442,22 +446,23 @@ const EmployeesPage = () => {
                         </thead>
                         <tbody>
                             {dsnhanvien?.map((emp, index) => {
-                                const isChecked = dsduocchon.current.some(item => item.nv_ID === emp.nv_ID);
+                                const isChecked = dsduocchon.current.some(item => item.NV_ID === emp.NV_ID);
+                               
 
                                 return (
-                                    <tr key={emp.nv_ID+"khk"}>
+                                    <tr key={emp.NV_ID}>
                                         <td>{index + 1}</td>
-                                        <td>{emp.nv_HOTEN}</td>
-                                        <td>{emp.nv_SDT}</td>
-                                        <td style={{color:"black"}}>{emp.nv_EMAIL}</td>
+                                        <td style={{color:"black"}}>{emp.NV_HOTEN}</td>
+                                        <td>{emp.NV_SDT}</td>
+                                        <td style={{color:"black"}}>{emp.NV_EMAIL}</td>
                                         <td>
                                             <Checkbox
                                                 defaultChecked={isChecked}
-                                                onChange={(e) => {
+                                                onClick={(e) => {
                                                     if (e.target.checked) {
                                                         dsduocchon.current.push(emp);
                                                     } else {
-                                                        dsduocchon.current = dsduocchon.current.filter(item => item.nv_ID !== emp.nv_ID);
+                                                        dsduocchon.current = dsduocchon.current.filter(item => item.NV_ID !== emp.NV_ID);
                                                     }
                                                 }}
                                             />
@@ -479,6 +484,7 @@ const EmployeesPage = () => {
                         headers: { "Content-Type": "application/json" }
                     })
                         .then(() => {
+                            dsduocchon.current=[]
                             alert("Tạo khấu trừ thành công");
                         })
                         .catch(() => {
