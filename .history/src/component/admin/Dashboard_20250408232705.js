@@ -61,50 +61,25 @@ const AdminDashboard = () => {
     ungLuongCount: 0,
     khieuNaiCount: 0,
   });
-  const [totalSalaryMonthYear, setTotalSalaryMonthYear] = useState({
+  const [selectedMonthYear, setSelectedMonthYear] = useState({
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
-  });
-  const [deductionRatioMonthYear, setDeductionRatioMonthYear] = useState({
-    month: new Date().getMonth() + 1,
-    year: new Date().getFullYear(),
-  });
-  const [salaryVsDeductionMonthYear, setSalaryVsDeductionMonthYear] = useState({
-    month: new Date().getMonth() + 1,
-    year: new Date().getFullYear(),
-  });
-  const [monthlySalaryYear, setMonthlySalaryYear] = useState(
-    new Date().getFullYear()
-  );
-  const [monthYearOptions, setMonthYearOptions] = useState([]);
-  const [availableYears, setAvailableYears] = useState([]);
-  const [totalPayrollCostLabels, setTotalPayrollCostLabels] = useState([]);
+  }); // Kết hợp tháng và năm
+  const [monthYearOptions, setMonthYearOptions] = useState([]); // Danh sách tháng/năm
+  const [availableYears, setAvailableYears] = useState([]); // Các năm có trong phiếu lương
+  const [totalPayrollCostLabels, setTotalPayrollCostLabels] = useState([]); // Nhãn cho "Tổng chi phí lương theo thời gian"
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportType, setReportType] = useState('salaryByDepartment');
-  const [selectedReportMonthYear, setSelectedReportMonthYear] = useState({
-    month: new Date().getMonth() + 1,
-    year: new Date().getFullYear(),
-  });
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-
-  // Ánh xạ giữa value và tên hiển thị của báo cáo
-  const reportTypeNames = {
-    salaryByDepartment: 'Tổng lương theo phòng ban',
-    salaryDetails: 'Chi tiết phiếu lương theo nhân viên',
-    deductionSummary: 'Tổng hợp khấu trừ',
-    advanceSalary: 'Ứng lương theo nhân viên',
-  };
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [maxDate, setMaxDate] = useState(
+    new Date().toISOString().split('T')[0]
+  ); // Ngày hiện tại
 
   useEffect(() => {
     fetchStats();
     fetchChartData();
-  }, [
-    totalSalaryMonthYear,
-    deductionRatioMonthYear,
-    salaryVsDeductionMonthYear,
-    monthlySalaryYear,
-  ]);
+  }, [selectedMonthYear]);
 
   const fetchStats = async () => {
     try {
@@ -141,21 +116,17 @@ const AdminDashboard = () => {
         khieuNaiCount: Array.isArray(khieuNaiData) ? khieuNaiData.length : 0,
       });
 
+      // Lấy các tháng/năm từ phieuLuongData
       const monthYearSet = new Set();
       phieuLuongData.forEach(item => {
         const date = new Date(item.ngayPhat);
         const month = date.getMonth() + 1;
         const year = date.getFullYear();
-        if (
-          year < currentYear ||
-          (year === currentYear && month <= currentMonth)
-        ) {
-          monthYearSet.add(`${month} - ${year}`);
-        }
+        monthYearSet.add(`${month}/${year}`);
       });
       const monthYearArray = [...monthYearSet]
         .map(item => {
-          const [month, year] = item.split(' - ').map(Number);
+          const [month, year] = item.split('/').map(Number);
           return { month, year };
         })
         .sort((a, b) => {
@@ -164,12 +135,22 @@ const AdminDashboard = () => {
         });
       setMonthYearOptions(monthYearArray);
 
+      // Lấy các năm có trong phiếu lương
       const years = [
         ...new Set(
           phieuLuongData.map(item => new Date(item.ngayPhat).getFullYear())
         ),
       ].sort();
       setAvailableYears(years);
+
+      // Đặt tháng/năm mặc định là mới nhất
+      if (monthYearArray.length > 0) {
+        const mostRecent = monthYearArray[monthYearArray.length - 1];
+        setSelectedMonthYear({
+          month: mostRecent.month,
+          year: mostRecent.year,
+        });
+      }
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
@@ -186,15 +167,15 @@ const AdminDashboard = () => {
       );
       const nhanVienData = await nhanVienResponse.json();
 
-      // 1. Tổng lương theo phòng ban
-      const filteredByTotalSalary = phieuLuongData.filter(item => {
+      // 1. Tổng lương theo phòng ban (lọc theo tháng/năm đã chọn)
+      const filteredByMonthYear = phieuLuongData.filter(item => {
         const date = new Date(item.ngayPhat);
         return (
-          date.getMonth() + 1 === totalSalaryMonthYear.month &&
-          date.getFullYear() === totalSalaryMonthYear.year
+          date.getMonth() + 1 === selectedMonthYear.month &&
+          date.getFullYear() === selectedMonthYear.year
         );
       });
-      const salaryByDepartment = filteredByTotalSalary.reduce((acc, item) => {
+      const salaryByDepartment = filteredByMonthYear.reduce((acc, item) => {
         const deptName = item?.nvId?.PB_ID?.PB_TEN || 'Không xác định';
         acc[deptName] = (acc[deptName] || 0) + (item.luongNhan || 0);
         return acc;
@@ -225,7 +206,7 @@ const AdminDashboard = () => {
             legend: { position: 'top' },
             title: {
               display: true,
-              text: `Tổng lương theo phòng ban (Tháng ${totalSalaryMonthYear.month}/${totalSalaryMonthYear.year})`,
+              text: `Tổng lương theo phòng ban (Tháng ${selectedMonthYear.month}/${selectedMonthYear.year})`,
             },
             datalabels: {
               anchor: 'end',
@@ -238,19 +219,12 @@ const AdminDashboard = () => {
         },
       });
 
-      // 2. Tỷ lệ khấu trừ và thu nhập
-      const filteredByDeductionRatio = phieuLuongData.filter(item => {
-        const date = new Date(item.ngayPhat);
-        return (
-          date.getMonth() + 1 === deductionRatioMonthYear.month &&
-          date.getFullYear() === deductionRatioMonthYear.year
-        );
-      });
-      const totalIncome = filteredByDeductionRatio.reduce(
+      // 2. Tỷ lệ khấu trừ và thu nhập (lọc theo tháng/năm đã chọn)
+      const totalIncome = filteredByMonthYear.reduce(
         (sum, item) => sum + (item.tongThuNhap || 0),
         0
       );
-      const totalDeduction = filteredByDeductionRatio.reduce(
+      const totalDeduction = filteredByMonthYear.reduce(
         (sum, item) => sum + (item.tongKhauTru || 0),
         0
       );
@@ -274,7 +248,7 @@ const AdminDashboard = () => {
             legend: { position: 'top' },
             title: {
               display: true,
-              text: `Tỷ lệ khấu trừ và thu nhập (Tháng ${deductionRatioMonthYear.month}/${deductionRatioMonthYear.year})`,
+              text: `Tỷ lệ khấu trừ và thu nhập (Tháng ${selectedMonthYear.month}/${selectedMonthYear.year})`,
             },
             tooltip: {
               callbacks: {
@@ -342,26 +316,15 @@ const AdminDashboard = () => {
         },
       });
 
-      // 4. Lương thực nhận và khấu trừ theo phòng ban
-      const filteredBySalaryVsDeduction = phieuLuongData.filter(item => {
-        const date = new Date(item.ngayPhat);
-        return (
-          date.getMonth() + 1 === salaryVsDeductionMonthYear.month &&
-          date.getFullYear() === salaryVsDeductionMonthYear.year
-        );
-      });
-      const salaryVsDeduction = filteredBySalaryVsDeduction.reduce(
-        (acc, item) => {
-          const deptName = item?.nvId?.PB_ID?.PB_TEN || 'Không xác định';
-          acc[deptName] = {
-            salary: (acc[deptName]?.salary || 0) + (item.luongNhan || 0),
-            deduction:
-              (acc[deptName]?.deduction || 0) + (item.tongKhauTru || 0),
-          };
-          return acc;
-        },
-        {}
-      );
+      // 4. Lương thực nhận và khấu trừ theo phòng ban (lọc theo tháng/năm đã chọn)
+      const salaryVsDeduction = filteredByMonthYear.reduce((acc, item) => {
+        const deptName = item?.nvId?.PB_ID?.PB_TEN || 'Không xác định';
+        acc[deptName] = {
+          salary: (acc[deptName]?.salary || 0) + (item.luongNhan || 0),
+          deduction: (acc[deptName]?.deduction || 0) + (item.tongKhauTru || 0),
+        };
+        return acc;
+      }, {});
       setSalaryVsDeductionData({
         labels: Object.keys(salaryVsDeduction),
         datasets: [
@@ -395,7 +358,7 @@ const AdminDashboard = () => {
             legend: { position: 'top' },
             title: {
               display: true,
-              text: `Lương thực nhận và khấu trừ theo phòng ban (Tháng ${salaryVsDeductionMonthYear.month}/${salaryVsDeductionMonthYear.year})`,
+              text: `Lương thực nhận và khấu trừ theo phòng ban (Tháng ${selectedMonthYear.month}/${selectedMonthYear.year})`,
             },
             datalabels: {
               anchor: 'end',
@@ -408,20 +371,20 @@ const AdminDashboard = () => {
         },
       });
 
-      // 5. Tổng chi phí lương theo thời gian
+      // 5. Tổng chi phí lương theo thời gian (từ tháng 1 đến tháng hiện tại trong năm hiện tại)
       const currentYearData = phieuLuongData.filter(item => {
         const date = new Date(item.ngayPhat);
-        return date.getFullYear() === totalSalaryMonthYear.year;
+        return date.getFullYear() === selectedMonthYear.year;
       });
       const monthlyPayroll = Array(12).fill(0);
       currentYearData.forEach(item => {
         const date = new Date(item.ngayPhat);
         const month = date.getMonth();
-        if (month < totalSalaryMonthYear.month)
+        if (month < selectedMonthYear.month)
           monthlyPayroll[month] += item.luongNhan || 0;
       });
       const labels = Array.from(
-        { length: totalSalaryMonthYear.month },
+        { length: selectedMonthYear.month },
         (_, i) => `Tháng ${i + 1}`
       );
       setTotalPayrollCostLabels(labels);
@@ -430,7 +393,7 @@ const AdminDashboard = () => {
         datasets: [
           {
             label: 'Tổng chi phí lương',
-            data: monthlyPayroll.slice(0, totalSalaryMonthYear.month),
+            data: monthlyPayroll.slice(0, selectedMonthYear.month),
             borderColor: 'rgba(75, 192, 192, 1)',
             backgroundColor: 'rgba(75, 192, 192, 0.2)',
             fill: true,
@@ -452,7 +415,7 @@ const AdminDashboard = () => {
             legend: { position: 'top' },
             title: {
               display: true,
-              text: `Tổng chi phí lương từ tháng 1 đến tháng ${totalSalaryMonthYear.month} (${totalSalaryMonthYear.year})`,
+              text: `Tổng chi phí lương từ tháng 1 đến tháng ${selectedMonthYear.month} (${selectedMonthYear.year})`,
             },
             datalabels: {
               anchor: 'end',
@@ -465,10 +428,10 @@ const AdminDashboard = () => {
         },
       });
 
-      // 6. Tổng lương theo tháng
+      // 6. Tổng lương theo tháng (lọc theo năm đã chọn)
       const filteredByYear = phieuLuongData.filter(item => {
         const date = new Date(item.ngayPhat);
-        return date.getFullYear() === monthlySalaryYear;
+        return date.getFullYear() === selectedMonthYear.year;
       });
       const monthlySalary = Array(12).fill(0);
       filteredByYear.forEach(item => {
@@ -515,7 +478,7 @@ const AdminDashboard = () => {
             legend: { position: 'top' },
             title: {
               display: true,
-              text: `Tổng lương theo tháng (Năm ${monthlySalaryYear})`,
+              text: `Tổng lương theo tháng (Năm ${selectedMonthYear.year})`,
             },
             datalabels: {
               anchor: 'end',
@@ -532,68 +495,28 @@ const AdminDashboard = () => {
     }
   };
 
-  const hasDataForTotalSalary = totalSalaryData?.datasets[0]?.data.some(
+  // Kiểm tra dữ liệu
+  const hasDataForSelectedMonthYear = totalSalaryData?.datasets[0]?.data.some(
     value => value > 0
   );
-  const hasDataForDeductionRatio = deductionRatioData?.datasets[0]?.data.some(
-    value => value > 0
-  );
-  const hasDataForSalaryVsDeduction =
-    salaryVsDeductionData?.datasets[0]?.data.some(value => value > 0);
-  const hasDataForMonthlySalary = monthlySalaryData?.datasets[0]?.data.some(
+  const hasDataForSelectedYear = monthlySalaryData?.datasets[0]?.data.some(
     value => value > 0
   );
 
-  const handleGenerateReport = async () => {
-    try {
-      let apiUrl;
-      let fileNamePrefix;
-
-      // Xác định API URL và tên file dựa trên loại báo cáo
-      switch (reportType) {
-        case 'salaryByDepartment':
-          apiUrl = `/api/report/salary-by-department?month=${selectedReportMonthYear.month}&year=${selectedReportMonthYear.year}`;
-          fileNamePrefix = 'Tổng lương theo phòng ban';
-          break;
-        case 'salaryDetails':
-          apiUrl = `/api/report/salary-details?month=${selectedReportMonthYear.month}&year=${selectedReportMonthYear.year}`;
-          fileNamePrefix = 'Chi tiết phiếu lương theo nhân viên';
-          break;
-        case 'deductionSummary':
-          apiUrl = `/api/report/deduction-summary?month=${selectedReportMonthYear.month}&year=${selectedReportMonthYear.year}`;
-          fileNamePrefix = 'Tổng hợp khấu trừ';
-          break;
-        case 'advanceSalary':
-          apiUrl = `/api/report/advance-salary?month=${selectedReportMonthYear.month}&year=${selectedReportMonthYear.year}`;
-          fileNamePrefix = 'Ứng lương theo nhân viên';
-          break;
-        default:
-          throw new Error('Loại báo cáo không hợp lệ');
-      }
-
-      // Gọi API để tải file Excel
-      const response = await fetch(`http://localhost:8080${apiUrl}`, {
-        method: 'GET',
-      });
-
-      if (!response.ok) {
-        throw new Error('Không thể tải báo cáo');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      const fileName = `${fileNamePrefix}_${selectedReportMonthYear.month}-${selectedReportMonthYear.year}.xlsx`;
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error generating report:', error);
-      alert('Có lỗi xảy ra khi tạo báo cáo. Vui lòng thử lại.');
+  const handleGenerateReport = () => {
+    if (new Date(startDate) > new Date(endDate)) {
+      alert('Thời gian bắt đầu không được lớn hơn thời gian kết thúc!');
+      return;
     }
+    if (new Date(endDate) > new Date(maxDate)) {
+      alert('Thời gian kết thúc không được lớn hơn ngày hiện tại!');
+      return;
+    }
+    // Logic xuất file Excel (giả lập)
+    console.log(
+      `Generating report of type: ${reportType} from ${startDate} to ${endDate}`
+    );
+    // Thêm logic thực tế để xuất file Excel (sử dụng thư viện như xlsx hoặc file-saver)
     setShowReportModal(false);
   };
 
@@ -610,6 +533,7 @@ const AdminDashboard = () => {
         Chào mừng! Đây là tổng quan hệ thống của bạn.
       </h5>
 
+      {/* Nút tạo báo cáo ở góc trên bên phải */}
       <div
         className="position-absolute top-0 end-0 m-3"
         style={{ zIndex: 1000 }}
@@ -619,6 +543,7 @@ const AdminDashboard = () => {
         </Button>
       </div>
 
+      {/* Quick Stats */}
       <Row className="mb-5 g-3">
         {[
           {
@@ -680,39 +605,50 @@ const AdminDashboard = () => {
         ))}
       </Row>
 
+      {/* Charts */}
       <Row className="g-4">
-        {hasDataForMonthlySalary && (
+        {/* Biểu đồ Tổng lương theo tháng với dropdown năm ở góc trên bên phải */}
+        {hasDataForSelectedYear && (
           <Col md={12}>
             <Card className="shadow border-0 rounded-3 chart-card h-100">
               <Card.Header className="py-3 bg-white border-bottom d-flex justify-content-between align-items-center">
                 <h6 className="m-0 stat-title text-primary">
                   Tổng lương theo tháng
                 </h6>
-                <div className="d-flex align-items-center">
-                  <span className="me-2 text-gray-600">Chọn năm:</span>
-                  <Form.Group controlId="yearSelectMonthly">
-                    <Form.Control
-                      as="select"
-                      value={monthlySalaryYear}
-                      onChange={e =>
-                        setMonthlySalaryYear(parseInt(e.target.value))
-                      }
-                      style={{ width: '100px' }}
-                    >
-                      {availableYears.map(year => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      ))}
-                    </Form.Control>
-                  </Form.Group>
-                </div>
+                <Form.Group controlId="yearSelectMonthly">
+                  <Form.Control
+                    as="select"
+                    value={selectedMonthYear.year}
+                    onChange={e =>
+                      setSelectedMonthYear({
+                        ...selectedMonthYear,
+                        year: parseInt(e.target.value),
+                      })
+                    }
+                    style={{ width: '100px' }}
+                  >
+                    {availableYears.map(year => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
               </Card.Header>
               <Card.Body className="chart-body">
                 {monthlySalaryData ? (
                   <Bar
                     data={monthlySalaryData}
-                    options={monthlySalaryData.options}
+                    options={{
+                      ...monthlySalaryData.options,
+                      plugins: {
+                        ...monthlySalaryData.options.plugins,
+                        title: {
+                          display: true,
+                          text: `Tổng lương theo tháng (Năm ${selectedMonthYear.year})`,
+                        },
+                      },
+                    }}
                     height={300}
                   />
                 ) : (
@@ -723,38 +659,36 @@ const AdminDashboard = () => {
           </Col>
         )}
 
-        {hasDataForTotalSalary && (
+        {/* Biểu đồ Tổng lương theo phòng ban với dropdown kết hợp */}
+        {hasDataForSelectedMonthYear && (
           <Col md={12}>
             <Card className="shadow border-0 rounded-3 chart-card h-100">
               <Card.Header className="py-3 bg-white border-bottom d-flex justify-content-between align-items-center">
                 <h6 className="m-0 stat-title text-primary">
                   Tổng lương theo phòng ban
                 </h6>
-                <div className="d-flex align-items-center">
-                  <span className="me-2 text-gray-600">Chọn tháng/năm:</span>
-                  <Form.Group controlId="monthYearSelectTotalSalary">
-                    <Form.Control
-                      as="select"
-                      value={`${totalSalaryMonthYear.month}/${totalSalaryMonthYear.year}`}
-                      onChange={e => {
-                        const [month, year] = e.target.value
-                          .split('/')
-                          .map(Number);
-                        setTotalSalaryMonthYear({ month, year });
-                      }}
-                      style={{ width: '150px' }}
-                    >
-                      {monthYearOptions.map(option => (
-                        <option
-                          key={`${option.month}/${option.year}`}
-                          value={`${option.month}/${option.year}`}
-                        >
-                          {`${option.month}/${option.year}`}
-                        </option>
-                      ))}
-                    </Form.Control>
-                  </Form.Group>
-                </div>
+                <Form.Group controlId="monthYearSelect">
+                  <Form.Control
+                    as="select"
+                    value={`${selectedMonthYear.month}/${selectedMonthYear.year}`}
+                    onChange={e => {
+                      const [month, year] = e.target.value
+                        .split('/')
+                        .map(Number);
+                      setSelectedMonthYear({ month, year });
+                    }}
+                    style={{ width: '150px' }}
+                  >
+                    {monthYearOptions.map(option => (
+                      <option
+                        key={`${option.month}/${option.year}`}
+                        value={`${option.month}/${option.year}`}
+                      >
+                        {`${option.month}/${option.year}`}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
               </Card.Header>
               <Card.Body className="chart-body">
                 {totalSalaryData ? (
@@ -771,44 +705,51 @@ const AdminDashboard = () => {
           </Col>
         )}
 
-        {hasDataForDeductionRatio && (
+        {/* Biểu đồ Tỷ lệ khấu trừ và thu nhập với dropdown kết hợp */}
+        {hasDataForSelectedMonthYear && (
           <Col md={6}>
             <Card className="shadow border-0 rounded-3 chart-card h-100">
               <Card.Header className="py-3 bg-white border-bottom d-flex justify-content-between align-items-center">
                 <h6 className="m-0 stat-title text-primary">
                   Tỷ lệ khấu trừ và thu nhập
                 </h6>
-                <div className="d-flex align-items-center">
-                  <span className="me-2 text-gray-600">Chọn tháng/năm:</span>
-                  <Form.Group controlId="monthYearSelectDeductionRatio">
-                    <Form.Control
-                      as="select"
-                      value={`${deductionRatioMonthYear.month}/${deductionRatioMonthYear.year}`}
-                      onChange={e => {
-                        const [month, year] = e.target.value
-                          .split('/')
-                          .map(Number);
-                        setDeductionRatioMonthYear({ month, year });
-                      }}
-                      style={{ width: '150px' }}
-                    >
-                      {monthYearOptions.map(option => (
-                        <option
-                          key={`${option.month}/${option.year}`}
-                          value={`${option.month}/${option.year}`}
-                        >
-                          {`${option.month}/${option.year}`}
-                        </option>
-                      ))}
-                    </Form.Control>
-                  </Form.Group>
-                </div>
+                <Form.Group controlId="monthYearSelectDeduction">
+                  <Form.Control
+                    as="select"
+                    value={`${selectedMonthYear.month}/${selectedMonthYear.year}`}
+                    onChange={e => {
+                      const [month, year] = e.target.value
+                        .split('/')
+                        .map(Number);
+                      setSelectedMonthYear({ month, year });
+                    }}
+                    style={{ width: '150px' }}
+                  >
+                    {monthYearOptions.map(option => (
+                      <option
+                        key={`${option.month}/${option.year}`}
+                        value={`${option.month}/${option.year}`}
+                      >
+                        {`${option.month}/${option.year}`}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
               </Card.Header>
               <Card.Body className="chart-body">
                 {deductionRatioData ? (
                   <Pie
                     data={deductionRatioData}
-                    options={deductionRatioData.options}
+                    options={{
+                      ...deductionRatioData.options,
+                      plugins: {
+                        ...deductionRatioData.options.plugins,
+                        title: {
+                          display: true,
+                          text: `Tỷ lệ khấu trừ và thu nhập (Tháng ${selectedMonthYear.month}/${selectedMonthYear.year})`,
+                        },
+                      },
+                    }}
                     height={300}
                   />
                 ) : (
@@ -819,6 +760,7 @@ const AdminDashboard = () => {
           </Col>
         )}
 
+        {/* Biểu đồ Số nhân viên theo phòng ban */}
         <Col md={6}>
           <Card className="shadow border-0 rounded-3 chart-card h-100">
             <Card.Header className="py-3 bg-white border-bottom">
@@ -840,44 +782,51 @@ const AdminDashboard = () => {
           </Card>
         </Col>
 
-        {hasDataForSalaryVsDeduction && (
+        {/* Biểu đồ Lương thực nhận và khấu trừ theo phòng ban với dropdown kết hợp */}
+        {hasDataForSelectedMonthYear && (
           <Col md={12}>
             <Card className="shadow border-0 rounded-3 chart-card h-100">
               <Card.Header className="py-3 bg-white border-bottom d-flex justify-content-between align-items-center">
                 <h6 className="m-0 stat-title text-primary">
                   Lương thực nhận và khấu trừ theo phòng ban
                 </h6>
-                <div className="d-flex align-items-center">
-                  <span className="me-2 text-gray-600">Chọn tháng/năm:</span>
-                  <Form.Group controlId="monthYearSelectSalaryVsDeduction">
-                    <Form.Control
-                      as="select"
-                      value={`${salaryVsDeductionMonthYear.month}/${salaryVsDeductionMonthYear.year}`}
-                      onChange={e => {
-                        const [month, year] = e.target.value
-                          .split('/')
-                          .map(Number);
-                        setSalaryVsDeductionMonthYear({ month, year });
-                      }}
-                      style={{ width: '150px' }}
-                    >
-                      {monthYearOptions.map(option => (
-                        <option
-                          key={`${option.month}/${option.year}`}
-                          value={`${option.month}/${option.year}`}
-                        >
-                          {`${option.month}/${option.year}`}
-                        </option>
-                      ))}
-                    </Form.Control>
-                  </Form.Group>
-                </div>
+                <Form.Group controlId="monthYearSelectSalaryVsDeduction">
+                  <Form.Control
+                    as="select"
+                    value={`${selectedMonthYear.month}/${selectedMonthYear.year}`}
+                    onChange={e => {
+                      const [month, year] = e.target.value
+                        .split('/')
+                        .map(Number);
+                      setSelectedMonthYear({ month, year });
+                    }}
+                    style={{ width: '150px' }}
+                  >
+                    {monthYearOptions.map(option => (
+                      <option
+                        key={`${option.month}/${option.year}`}
+                        value={`${option.month}/${option.year}`}
+                      >
+                        {`${option.month}/${option.year}`}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
               </Card.Header>
               <Card.Body className="chart-body">
                 {salaryVsDeductionData ? (
                   <Bar
                     data={salaryVsDeductionData}
-                    options={salaryVsDeductionData.options}
+                    options={{
+                      ...salaryVsDeductionData.options,
+                      plugins: {
+                        ...salaryVsDeductionData.options.plugins,
+                        title: {
+                          display: true,
+                          text: `Lương thực nhận và khấu trừ theo phòng ban (Tháng ${selectedMonthYear.month}/${selectedMonthYear.year})`,
+                        },
+                      },
+                    }}
                     height={300}
                   />
                 ) : (
@@ -888,12 +837,13 @@ const AdminDashboard = () => {
           </Col>
         )}
 
+        {/* Biểu đồ Tổng chi phí lương theo thời gian */}
         <Col md={12}>
           <Card className="shadow border-0 rounded-3 chart-card h-100">
             <Card.Header className="py-3 bg-white border-bottom">
               <h6 className="m-0 stat-title text-primary">
                 Tổng chi phí lương từ tháng 1 đến tháng{' '}
-                {totalSalaryMonthYear.month} ({totalSalaryMonthYear.year})
+                {selectedMonthYear.month} ({selectedMonthYear.year})
               </h6>
             </Card.Header>
             <Card.Body className="chart-body">
@@ -911,6 +861,7 @@ const AdminDashboard = () => {
         </Col>
       </Row>
 
+      {/* Modal cho tạo báo cáo với lịch */}
       <Modal show={showReportModal} onHide={() => setShowReportModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Tạo báo cáo</Modal.Title>
@@ -927,33 +878,33 @@ const AdminDashboard = () => {
                 <option value="salaryByDepartment">
                   Tổng lương theo phòng ban
                 </option>
-                <option value="salaryDetails">
-                  Chi tiết phiếu lương theo nhân viên
+                <option value="deductionRatio">
+                  Tỷ lệ khấu trừ và thu nhập
                 </option>
-                <option value="deductionSummary">Tổng hợp khấu trừ</option>
-                <option value="advanceSalary">Ứng lương theo nhân viên</option>
+                <option value="salaryVsDeduction">
+                  Lương thực nhận và khấu trừ
+                </option>
+                <option value="totalPayrollCost">Tổng chi phí lương</option>
+                <option value="monthlySalary">Tổng lương theo tháng</option>
               </Form.Control>
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Chọn tháng báo cáo</Form.Label>
+              <Form.Label>Thời gian bắt đầu</Form.Label>
               <Form.Control
-                as="select"
-                value={`${selectedReportMonthYear.month} - ${selectedReportMonthYear.year}`}
-                onChange={e => {
-                  const [month, year] = e.target.value.split(' - ').map(Number);
-                  setSelectedReportMonthYear({ month, year });
-                }}
-                style={{ width: '150px' }}
-              >
-                {monthYearOptions.map(option => (
-                  <option
-                    key={`${option.month} - ${option.year}`}
-                    value={`${option.month} - ${option.year}`}
-                  >
-                    {`${option.month} - ${option.year}`}
-                  </option>
-                ))}
-              </Form.Control>
+                type="date"
+                value={startDate}
+                max={endDate || maxDate}
+                onChange={e => setStartDate(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Thời gian kết thúc</Form.Label>
+              <Form.Control
+                type="date"
+                value={endDate}
+                max={maxDate}
+                onChange={e => setEndDate(e.target.value)}
+              />
             </Form.Group>
           </Form>
         </Modal.Body>

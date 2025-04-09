@@ -32,6 +32,7 @@ import {
   faExclamationTriangle,
   faPlus,
 } from '@fortawesome/free-solid-svg-icons';
+import * as XLSX from 'xlsx';
 
 // Register Chart.js components and plugins
 ChartJS.register(
@@ -91,9 +92,10 @@ const AdminDashboard = () => {
   // Ánh xạ giữa value và tên hiển thị của báo cáo
   const reportTypeNames = {
     salaryByDepartment: 'Tổng lương theo phòng ban',
-    salaryDetails: 'Chi tiết phiếu lương theo nhân viên',
-    deductionSummary: 'Tổng hợp khấu trừ',
-    advanceSalary: 'Ứng lương theo nhân viên',
+    deductionRatio: 'Tỷ lệ khấu trừ và thu nhập',
+    salaryVsDeduction: 'Lương thực nhận và khấu trừ',
+    totalPayrollCost: 'Tổng chi phí lương',
+    monthlySalary: 'Tổng lương theo tháng',
   };
 
   useEffect(() => {
@@ -547,52 +549,82 @@ const AdminDashboard = () => {
   const handleGenerateReport = async () => {
     try {
       let apiUrl;
-      let fileNamePrefix;
+      let reportData;
 
-      // Xác định API URL và tên file dựa trên loại báo cáo
+      // Xác định API URL dựa trên loại báo cáo
       switch (reportType) {
         case 'salaryByDepartment':
-          apiUrl = `/api/report/salary-by-department?month=${selectedReportMonthYear.month}&year=${selectedReportMonthYear.year}`;
-          fileNamePrefix = 'Tổng lương theo phòng ban';
+          apiUrl = `http://localhost:8080/api/report/salary-by-department?month=${selectedReportMonthYear.month}&year=${selectedReportMonthYear.year}`;
           break;
-        case 'salaryDetails':
-          apiUrl = `/api/report/salary-details?month=${selectedReportMonthYear.month}&year=${selectedReportMonthYear.year}`;
-          fileNamePrefix = 'Chi tiết phiếu lương theo nhân viên';
+        case 'deductionRatio':
+          apiUrl = `http://localhost:8080/api/report/deduction-summary?month=${selectedReportMonthYear.month}&year=${selectedReportMonthYear.year}`;
           break;
-        case 'deductionSummary':
-          apiUrl = `/api/report/deduction-summary?month=${selectedReportMonthYear.month}&year=${selectedReportMonthYear.year}`;
-          fileNamePrefix = 'Tổng hợp khấu trừ';
+        case 'salaryVsDeduction':
+          apiUrl = `http://localhost:8080/api/report/salary-details?month=${selectedReportMonthYear.month}&year=${selectedReportMonthYear.year}`;
           break;
-        case 'advanceSalary':
-          apiUrl = `/api/report/advance-salary?month=${selectedReportMonthYear.month}&year=${selectedReportMonthYear.year}`;
-          fileNamePrefix = 'Ứng lương theo nhân viên';
+        case 'totalPayrollCost':
+        case 'monthlySalary':
+          apiUrl = `http://localhost:8080/api/phieu-luong/all`;
           break;
         default:
           throw new Error('Loại báo cáo không hợp lệ');
       }
 
-      // Gọi API để tải file Excel
-      const response = await fetch(`http://localhost:8080${apiUrl}`, {
-        method: 'GET',
-      });
-
+      // Gọi API và lấy dữ liệu
+      const response = await fetch(apiUrl);
       if (!response.ok) {
         throw new Error('Không thể tải báo cáo');
       }
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      const fileName = `${fileNamePrefix}_${selectedReportMonthYear.month}-${selectedReportMonthYear.year}.xlsx`;
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      // Nếu là Excel trực tiếp từ backend
+      if (
+        response.headers.get('Content-Type') ===
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const reportName = reportTypeNames[reportType];
+        link.setAttribute(
+          'download',
+          `${reportName}_${selectedReportMonthYear.month}-${selectedReportMonthYear.year}.xlsx`
+        );
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        // Nếu là JSON (cho totalPayrollCost và monthlySalary)
+        reportData = await response.json();
+        let filteredData;
+
+        if (reportType === 'monthlySalary') {
+          filteredData = reportData.filter(item => {
+            const date = new Date(item.ngayPhat);
+            return date.getFullYear() === selectedReportMonthYear.year;
+          });
+        } else if (reportType === 'totalPayrollCost') {
+          filteredData = reportData.filter(item => {
+            const date = new Date(item.ngayPhat);
+            return (
+              date.getFullYear() === selectedReportMonthYear.year &&
+              date.getMonth() + 1 <= selectedReportMonthYear.month
+            );
+          });
+        }
+
+        const ws = XLSX.utils.json_to_sheet(filteredData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Report');
+        const reportName = reportTypeNames[reportType];
+        XLSX.writeFile(
+          wb,
+          `${reportName}_${selectedReportMonthYear.month}-${selectedReportMonthYear.year}.xlsx`
+        );
+      }
     } catch (error) {
       console.error('Error generating report:', error);
-      alert('Có lỗi xảy ra khi tạo báo cáo. Vui lòng thử lại.');
     }
     setShowReportModal(false);
   };
@@ -927,11 +959,14 @@ const AdminDashboard = () => {
                 <option value="salaryByDepartment">
                   Tổng lương theo phòng ban
                 </option>
-                <option value="salaryDetails">
-                  Chi tiết phiếu lương theo nhân viên
+                <option value="deductionRatio">
+                  Tỷ lệ khấu trừ và thu nhập
                 </option>
-                <option value="deductionSummary">Tổng hợp khấu trừ</option>
-                <option value="advanceSalary">Ứng lương theo nhân viên</option>
+                <option value="salaryVsDeduction">
+                  Lương thực nhận và khấu trừ
+                </option>
+                <option value="totalPayrollCost">Tổng chi phí lương</option>
+                <option value="monthlySalary">Tổng lương theo tháng</option>
               </Form.Control>
             </Form.Group>
             <Form.Group className="mb-3">
