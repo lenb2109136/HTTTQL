@@ -14,6 +14,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Dialog, DialogContent, DialogTitle } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import moment from 'moment'
+
 
 const SalaryScalePage = () => {
     const idchon =useRef({
@@ -243,11 +245,13 @@ const SalaryScalePage = () => {
                     variant="warning"
                     className="me-2"
                     onClick={() => {
-                        navigate(`/pay-grade?id=${ngach.id}`)
+                        navigate(`/pay-grade?id=${ngach.ten}`)
+                        // ngach.id
                     }}
                   >
                     Chi tiết bậc
                   </Button>
+
                 </td>
               </tr>
             ))
@@ -282,48 +286,37 @@ const SalaryScalePage = () => {
                 {errors.NGACH_TEN}
                 </Form.Control.Feedback>
             </Form.Group>
-
-            {/* <Form.Group className="mb-3">
-                <Form.Label>Mã ngạch</Form.Label>
-                <Form.Control
-                type="text"
-                value={formData.NGACH_MA}
-                onChange={e =>
-                    setFormData({ ...formData, NGACH_MA: e.target.value })
-                }
-                isInvalid={!!errors.NGACH_MA}
-                />
-                <Form.Control.Feedback type="invalid">
-                {errors.NGACH_MA}
-                </Form.Control.Feedback>
-            </Form.Group> */}
-
             <Form.Group className="mb-3">
                 <Form.Label>Lương cơ sở</Form.Label>
                 <Form.Control
-                type="number"
-                step="1000"
-                min="0"
-                defaultValue={idchon.current?.luongCoSo}
-                // value={formData.NGACH_LUONGCOSO}
-                onChange={(e) =>{
-                    idchon.current.luongCoSo=e.target.value
-                    setFormData({ ...formData, NGACH_LUONGCOSO: parseFloat(e.target.value) || 0 })
-                }}
-                isInvalid={!!errors.NGACH_LUONGCOSO}
+                  type="text"
+                  value={Number(idchon.current?.luongCoSo || 0).toLocaleString('vi-VN')}
+                  onChange={(e) => {
+                    const input = e.target.value;
+
+                    // Loại bỏ dấu phẩy, khoảng trắng → chỉ giữ lại số
+                    const cleaned = input.replace(/[^\d]/g, '');
+                    const numericValue = parseFloat(cleaned) || 0;
+
+                    // Cập nhật ref
+                    idchon.current.luongCoSo = numericValue;
+
+                    // Cập nhật state chính
+                    setFormData({ ...formData, NGACH_LUONGCOSO: numericValue });
+                  }}
+                  isInvalid={!!errors.NGACH_LUONGCOSO}
                 />
                 <Form.Control.Feedback type="invalid">
                 {errors.NGACH_LUONGCOSO}
                 </Form.Control.Feedback>
             </Form.Group>
-
-            <div className="d-flex justify-content-center mt-3">
+            <div  className="d-flex justify-content-center mt-3">
                 <Button onClick={()=>{
                     const today = new Date();
                     const formattedDate = today.toISOString().split('T')[0];
                     idchon.current.ngayApDung = formattedDate;
                     console.log(idchon.current)
-                    axios.post("http://localhost:8080/api/ngach-luong/latest",idchon.current)
+                    axios.post("http://localhost:8080/api/ngach-luong",idchon.current)
                     .then((respose)=>{
                         idchon.current={
                             "id": 0,
@@ -332,6 +325,7 @@ const SalaryScalePage = () => {
                             "ngayApDung": formattedDate
                         }
                         alert("Lưu thành công")
+
                     }).catch((erro)=>{
                         alert("Có lỗi xayra")
                     })
@@ -405,7 +399,7 @@ const SalaryScalePage = () => {
                 {/* <td>{ngach.maNgach || 'N/A'}</td> */}
                 <td>{Intl.NumberFormat().format(ngach.luongCoSo || 0)}</td>
                 <td>
-                {ngach.ngayApDung || 0}
+                {moment(ngach.ngayApDung).utcOffset('+07:00').format('DD/MM/YYYY HH:mm:ss') || 0}
                 </td>
               </tr>
             ))

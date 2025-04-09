@@ -51,7 +51,7 @@ function MainLayout() {
             path="/emp-salary-advance"
             element={<EmployeeSalaryAdvance />}
           />
-          {/* <Route path='/pay-grade' element={<PayGradePage></PayGradePage>}></Route> */}
+          <Route path='/pay-grade' element={<PayGradePage></PayGradePage>}></Route>
           <Route path="/salary-scale" element={<SalaryScalePage />} />
         </Routes>
       </div>

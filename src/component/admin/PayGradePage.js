@@ -29,12 +29,7 @@ function formatDate(inputDate) {
     return formattedDate.replace(',', '');
   }
 const SalaryScalePage = () => {
-    const idchon =useRef({
-        "id": 0,
-        "ten": "",
-        "heSo": 0,
-        "ngachId":0
-    })
+
     const [searchParams] = useSearchParams();
 const id = searchParams.get('id');
     const [lichsu,setlicchsu]= useState([])
@@ -47,21 +42,57 @@ const id = searchParams.get('id');
   const [load,setload]=useState(false)
   const [editingNgachLuong, setEditingNgachLuong] = useState(null);
   const [formData, setFormData] = useState({
-    NGACH_TEN: '',
-    NGACH_LUONGCOSO: 0,
+    BAC_TEN: '',
+    BAC_HESO: 0,
   });
   const [errors, setErrors] = useState({});
+  const [selectedNgachId, setSelectedNgachId] = useState(null);
 
   const API_URL = 'http://localhost:8080/api';
+  const idchon =useRef({
+    "id": 0,
+    "ten": "",
+    "heSo": 1,
+    "ngachId":selectedNgachId
+})
 
   useEffect(() => {
+    // fetchNgachLuongsTen();
     fetchNgachLuongs();
   }, []);
 
+  // const fetchNgachLuongsTen = async () => {
+
+  //     const response = await axios.get(`http://localhost:8080/api/ngach-luong/${id}`);
+  //     console.log('Dữ liệu ngạch lương từ backend:', response.data);
+  //     const idFromResponse = response.data.ten;
+  //     console.log("ID lấy được:", idFromResponse);
+
+  //     if (idFromResponse) {
+  //       setSelectedNgachId(idFromResponse); // ← lưu ra ngoài
+  //     }
+  //     setNgachLuongs(response.data);
+
+  // };
+
+
   const fetchNgachLuongs = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/bac-luong/ngach/${id}/latest`);
+      const response = await axios.get(`http://localhost:8080/api/bac-luong/ngach/${id}/old`);
       console.log('Dữ liệu ngạch lương từ backend:', response.data);
+      const idFromResponse = response.data[0]?.ngachLuong?.id;
+      console.log("ID lấy được:", idFromResponse);
+
+      if (idFromResponse) {
+        setSelectedNgachId(idFromResponse); // ← lưu ra ngoài
+      }
+      else{
+        const response1 = await axios.get(`http://localhost:8080/api/ngach-luong?ten=${id}`);
+        console.log('Dữ liệu TÊN:', response1.data);
+        const idFromResponse = response1.data[0]?.id;
+        console.log("ID lấy được FGFDFDHH:", idFromResponse);
+        setSelectedNgachId(idFromResponse);
+      }
       setNgachLuongs(response.data);
     } catch (error) {
       console.error('Lỗi khi tải danh sách ngạch lương:', error);
@@ -74,10 +105,10 @@ const id = searchParams.get('id');
 
 //   const validateForm = () => {
 //     const newErrors = {};
-//     if (!formData.NGACH_TEN) newErrors.NGACH_TEN = 'Tên ngạch lương là bắt buộc';
+//     if (!formData.BAC_TEN) newErrors.BAC_TEN = 'Tên ngạch lương là bắt buộc';
 //     // if (!formData.NL_MA) newErrors.NL_MA = 'Mã ngạch là bắt buộc';
-//     if (!formData.NGACH_LUONGCOSO || formData.NGACH_LUONGCOSO <= 0)
-//       newErrors.NGACH_LUONGCOSO = 'Hệ số lương phải lớn hơn 0';
+//     if (!formData.BAC_HESO || formData.BAC_HESO <= 0)
+//       newErrors.BAC_HESO = 'Hệ số lương phải lớn hơn 0';
 //     return newErrors;
 //   };
 
@@ -87,7 +118,7 @@ const id = searchParams.get('id');
     console.log('Chỉnh sửa ngạch lương:', ngachLuong);
     setEditingNgachLuong(ngachLuong);
     setFormData({
-      NGACH_LUONGCOSO: ngachLuong.heSoLuong || 0,
+      BAC_HESO: ngachLuong.heSoLuong || 0,
     });
     setErrors({});
     setShowModal(true);
@@ -109,8 +140,8 @@ const id = searchParams.get('id');
 
 //     try {
 //       const payload = {
-//         tenNgach: formData.NGACH_TEN,
-//         heSoLuong: formData.NGACH_LUONGCOSO,
+//         tenNgach: formData.BAC_TEN,
+//         heSoLuong: formData.BAC_HESO,
 //       };
 //       console.log('Gửi dữ liệu:', payload);
 
@@ -161,8 +192,8 @@ const id = searchParams.get('id');
 
   const resetForm = () => {
     setFormData({
-      NGACH_TEN: '',
-      NGACH_LUONGCOSO: 0,
+      BAC_TEN: '',
+      BAC_HESO: 0,
     });
     setErrors({});
   };
@@ -180,10 +211,10 @@ const id = searchParams.get('id');
 
   return (
     <Container>
-      <h1 className="text-center my-4">Quản lý ngạch lương</h1>
+      <h1 className="text-center my-4">Quản lý bậc lương {id}</h1>
       <Row className="mb-3 d-flex justify-content-between align-items-center">
         <Col>
-          <h2>Danh sách ngạch lương</h2>
+          <h2>Danh sách bậc lương</h2>
         </Col>
         <Col className="text-end">
           <Button
@@ -201,9 +232,9 @@ const id = searchParams.get('id');
         <thead>
           <tr>
             <th>STT</th>
-            <th>Tên ngạch</th>
+            <th>Tên bậc</th>
             {/* <th>Mã ngạch</th> */}
-            <th>Lương cơ sở</th>
+            <th>Hệ số lương</th>
             <th>Thao tác</th>
           </tr>
         </thead>
@@ -211,7 +242,7 @@ const id = searchParams.get('id');
           {ngachLuongs.length === 0 ? (
             <tr>
               <td colSpan="5" className="text-center">
-                Không có ngạch lương nào.
+                Không có bậc lương nào.
               </td>
             </tr>
           ) : (
@@ -285,68 +316,54 @@ const id = searchParams.get('id');
                 <Form.Control
                 type="text"
                 defaultValue={idchon.current?.ten}
-                value={formData.NGACH_TEN}
+                value={formData.BAC_TEN}
                 onChange={e =>
                 {
                     idchon.current.ten=e.target.value
-                    setFormData({ ...formData, NGACH_TEN: e.target.value })
+                    setFormData({ ...formData, BAC_TEN: e.target.value })
                 }
                 }
-                isInvalid={!!errors.NGACH_TEN}
+                isInvalid={!!errors.BAC_TEN}
                 />
                 <Form.Control.Feedback type="invalid">
-                {errors.NGACH_TEN}
+                {errors.BAC_TEN}
                 </Form.Control.Feedback>
             </Form.Group>
-
-            {/* <Form.Group className="mb-3">
-                <Form.Label>Mã ngạch</Form.Label>
-                <Form.Control
-                type="text"
-                value={formData.NGACH_MA}
-                onChange={e =>
-                    setFormData({ ...formData, NGACH_MA: e.target.value })
-                }
-                isInvalid={!!errors.NGACH_MA}
-                />
-                <Form.Control.Feedback type="invalid">
-                {errors.NGACH_MA}
-                </Form.Control.Feedback>
-            </Form.Group> */}
-
             <Form.Group className="mb-3">
-                <Form.Label>Hệ số lương</Form.Label>
+                <Form.Label>Hệ số lương </Form.Label>
                 <Form.Control
                 type="number"
-                step="1000"
-                min="0"
+                step="0.01"
+                min="1"
                 defaultValue={idchon.current?.heSo}
-                // value={formData.NGACH_LUONGCOSO}
+                // value={formData.BAC_HESO}
                 onChange={(e) =>{
-                    idchon.current.luongCoSo=e.target.value
-                    setFormData({ ...formData, NGACH_LUONGCOSO: parseFloat(e.target.value) || 0 })
+                    idchon.current.heSo=e.target.value
+                    setFormData({ ...formData, BAC_HESO: parseFloat(e.target.value) || 0 })
                 }}
-                isInvalid={!!errors.NGACH_LUONGCOSO}
+                isInvalid={!!errors.BAC_HESO}
                 />
                 <Form.Control.Feedback type="invalid">
-                {errors.NGACH_LUONGCOSO}
+                {errors.BAC_HESO}
                 </Form.Control.Feedback>
             </Form.Group>
 
             <div className="d-flex justify-content-center mt-3">
                 <Button onClick={()=>{
                     const today = new Date();
-                    const formattedDate = today.toISOString().split('T')[0];
+                    const formattedDate = today.toISOString();
                     idchon.current.ngayApDung = formattedDate;
-                    idchon.current.ngachId=id;
+                    idchon.current.ngachId=selectedNgachId;
 
                     console.log(idchon.current)
 
-                    axios.post("http://localhost:8080/api/bac-luong/save",idchon.current)
+                    // axios.post("http://localhost:8080/api/bac-luong/save",idchon.current)
+                    axios.post(`http://localhost:8080/api/bac-luong/${selectedNgachId}`, idchon.current)
+
                     .then((respose)=>{
                         idchon.current={
                             "id": 0,
-                            "heSo": 0,
+                            "heSo": 1,
                             "ten": "",
                         }
                         alert("Lưu thành công")
@@ -354,7 +371,7 @@ const id = searchParams.get('id');
                     }).catch((erro)=>{
                         alert("Có lỗi xayra")
                     })
-                    axios.get(`http://localhost:8080/api/bac-luong/ngach/${id}/latest`)
+                    axios.get(`http://localhost:8080/api/bac-luong/ngach/${selectedNgachId}/latest`)
                     .then((response)=>{
                         setNgachLuongs(response.data);
                     })
