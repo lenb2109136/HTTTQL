@@ -37,7 +37,7 @@ const EmployeesPage = () => {
     const [showModal3, setShowModal3] = useState(false);
     const [opena, setOpena] = useState(false)
     const not = useRef(false)
-   
+
 
     const handleModalOpen3 = (data) => {
         setShowModal3(true)
@@ -263,7 +263,7 @@ const EmployeesPage = () => {
                     <div>
                         <Row className="mb-3 d-flex justify-content-between align-items-center">
                             <Col>
-                                <h2>Danh sách nhân viên</h2>
+                                <h2>Danh sách khấu trừ</h2>
                             </Col>
                             <Col className="text-end">
                                 <Button style={{ marginRight: "15px" }} variant="primary" onClick={() => {
@@ -318,7 +318,7 @@ const EmployeesPage = () => {
                     </div>
                 )}
             </Box>
-            
+
 
 
             {/* Modal for creating new Khấu trừ */}
@@ -447,7 +447,7 @@ const EmployeesPage = () => {
                         <tbody>
                             {dsnhanvien?.map((emp, index) => {
                                 const isChecked = dsduocchon.current.some(item => item.NV_ID === emp.NV_ID);
-                               
+
 
                                 return (
                                     <tr key={emp.NV_ID}>
