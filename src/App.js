@@ -19,8 +19,7 @@ import SidebarEmp from './component/user/EmployeeSidebar';
 import EmpReports from './component/user/EmployeeReport';
 
 import SalaryScalePage from './component/admin/SalaryScalePage';
-import PayGradePage from "./component/admin/PayGradePage"
-
+import PayGradePage from "./component/admin/PayGradePage";
 import Deductions from './component/admin/DeductionsPage';
 import SalaryCalculation from './component/admin/SalaryCalculationPage';
 
@@ -37,7 +36,7 @@ function MainLayout() {
       <div className="main-content">
         {isEmployeePage ? <HeaderEmp /> : <Header />}
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/employees" element={<Employee />} />
           <Route path="/salary-advance" element={<SalaryAdvance />} />
           <Route path="/departments" element={<Department />} />
@@ -46,12 +45,8 @@ function MainLayout() {
           <Route path="/userhome" element={<UserHome />} />
           <Route path="/complaints" element={<EmpReports />} />
           <Route path="/salary-calculation" element={<SalaryCalculation />} />
-
-          <Route
-            path="/emp-salary-advance"
-            element={<EmployeeSalaryAdvance />}
-          />
-          <Route path='/pay-grade' element={<PayGradePage></PayGradePage>}></Route>
+          <Route path="/emp-salary-advance" element={<EmployeeSalaryAdvance />} />
+          <Route path="/pay-grade" element={<PayGradePage />} />
           <Route path="/salary-scale" element={<SalaryScalePage />} />
         </Routes>
       </div>
@@ -63,7 +58,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Trang login độc lập, không có header hay sidebar */}
+        {/* Trang mặc định là login */}
+        <Route path="/" element={<LoginPage />} />
         <Route path="/login" element={<LoginPage />} />
         {/* Các trang khác sử dụng layout có header và sidebar */}
         <Route path="/*" element={<MainLayout />} />

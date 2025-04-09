@@ -111,7 +111,7 @@ const EmployeesPage = () => {
     } catch (error) {
       console.error('Lỗi khi tải danh sách ngạch lương:', error);
       toast.error(
-        'Không thể tải danh sách ngạch lương: ' +
+        'Không thể tải danh sách ngạch lương:的状态' +
           (error.response?.data?.message || error.message)
       );
     }
@@ -120,12 +120,24 @@ const EmployeesPage = () => {
   const fetchBacLuongs = async ngachId => {
     if (!ngachId) {
       setBacLuongs([]);
+      setFormData(prev => ({ ...prev, BAC_ID: '' }));
       return;
     }
     try {
-      const response = await axios.get(`${API_URL}/bac-luong/ngach/${ngachId}`);
+      console.log('Đang lấy bậc lương cho ngạch ID:', ngachId);
+      const response = await axios.get(`${API_URL}/bac-luong/ngach/${ngachId}/latest`);
       console.log('Dữ liệu bậc lương từ backend:', response.data);
       setBacLuongs(response.data);
+
+      // Tự động chọn bậc mới nhất nếu có (dựa trên ngày áp dụng)
+      if (response.data.length > 0) {
+        const latestBac = response.data.reduce((latest, current) =>
+          new Date(latest.ngayApDung) > new Date(current.ngayApDung) ? latest : current
+        );
+        setFormData(prev => ({ ...prev, BAC_ID: latestBac.id }));
+      } else {
+        setFormData(prev => ({ ...prev, BAC_ID: '' }));
+      }
     } catch (error) {
       console.error('Lỗi khi tải danh sách bậc lương:', error);
       toast.error(
@@ -141,7 +153,6 @@ const EmployeesPage = () => {
         `${API_URL}/chi-tiet-bac-luong/nhan-vien/${employeeId}`
       );
       console.log('Lịch sử bậc lương:', response.data);
-      // Sắp xếp theo ngày áp dụng tăng dần (cũ nhất lên đầu)
       const sortedHistory = response.data.sort(
         (a, b) => new Date(a.ngayApDung) - new Date(b.ngayApDung)
       );
@@ -197,7 +208,8 @@ const EmployeesPage = () => {
     if (!formData.NV_EMAIL) newErrors.NV_EMAIL = 'Email là bắt buộc';
     if (!formData.NV_SDT) newErrors.NV_SDT = 'Số điện thoại là bắt buộc';
     if (!formData.NV_USERNAME) newErrors.NV_USERNAME = 'Username là bắt buộc';
-    if (!formData.NV_PASSWORD) newErrors.NV_PASSWORD = 'Mật khẩu là bắt buộc';
+    if (!formData.NV_PASSWORD && !editingEmployee)
+      newErrors.NV_PASSWORD = 'Mật khẩu là bắt buộc'; // Chỉ yêu cầu mật khẩu khi thêm mới
     if (!formData.NV_DIACHI) newErrors.NV_DIACHI = 'Địa chỉ là bắt buộc';
     if (!formData.NGACH_ID) newErrors.NGACH_ID = 'Ngạch lương là bắt buộc';
     if (!formData.BAC_ID) newErrors.BAC_ID = 'Bậc lương là bắt buộc';
@@ -222,7 +234,7 @@ const EmployeesPage = () => {
         NV_EMAIL: formData.NV_EMAIL,
         NV_SDT: formData.NV_SDT,
         NV_USERNAME: formData.NV_USERNAME,
-        NV_PASSWORD: formData.NV_PASSWORD,
+        NV_PASSWORD: formData.NV_PASSWORD || undefined, // Không gửi mật khẩu nếu không thay đổi
         NV_DIACHI: formData.NV_DIACHI,
       };
 
@@ -275,25 +287,51 @@ const EmployeesPage = () => {
     }
   };
 
-  const handleEdit = employee => {
+  const handleEdit = async employee => {
     console.log('Chỉnh sửa nhân viên:', employee);
     setEditingEmployee(employee);
-    setFormData({
-      NV_HOTEN: employee.NV_HOTEN || '',
-      PB_ID: employee.PB_ID?.PB_ID || '',
-      NV_NGAYSINH: employee.NV_NGAYSINH || '',
-      NV_GIOITINH: employee.NV_GIOITINH === 1,
-      NV_EMAIL: employee.NV_EMAIL || '',
-      NV_SDT: employee.NV_SDT || '',
-      NV_USERNAME: employee.NV_USERNAME || '',
-      NV_PASSWORD: employee.NV_PASSWORD || '',
-      NV_DIACHI: employee.NV_DIACHI || '',
-      NGACH_ID: employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id || '/',
-      BAC_ID: employee.latestChiTietBacLuong?.bac_ID?.id || '',
-    });
-    if (employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id) {
-      fetchBacLuongs(employee.latestChiTietBacLuong.bac_ID.ngachLuong.id);
+
+    try {
+      // Lấy dữ liệu ngạch lương mới nhất
+      const ngachResponse = await axios.get(`${API_URL}/ngach-luong/latest`);
+      console.log('Dữ liệu ngạch lương từ backend:', ngachResponse.data);
+      setNgachLuongs(ngachResponse.data);
+
+      // Lấy ngạch và bậc hiện tại của nhân viên
+      const currentNgachId = employee.latestChiTietBacLuong?.bac_ID?.ngachLuong?.id || '';
+      const currentBacId = employee.latestChiTietBacLuong?.bac_ID?.id || '';
+
+      // Set form data với thông tin hiện tại
+      setFormData({
+        NV_HOTEN: employee.NV_HOTEN || '',
+        PB_ID: employee.PB_ID?.PB_ID || '',
+        NV_NGAYSINH: employee.NV_NGAYSINH || '',
+        NV_GIOITINH: employee.NV_GIOITINH === 1,
+        NV_EMAIL: employee.NV_EMAIL || '',
+        NV_SDT: employee.NV_SDT || '',
+        NV_USERNAME: employee.NV_USERNAME || '',
+        NV_PASSWORD: '', // Không lấy mật khẩu cũ để bảo mật
+        NV_DIACHI: employee.NV_DIACHI || '',
+        NGACH_ID: currentNgachId,
+        BAC_ID: currentBacId,
+      });
+
+      // Tải danh sách bậc lương dựa trên ngạch lương hiện tại
+      if (currentNgachId) {
+        await fetchBacLuongs(currentNgachId);
+      } else {
+        setBacLuongs([]);
+        setFormData(prev => ({ ...prev, BAC_ID: '' }));
+      }
+
+    } catch (error) {
+      console.error('Lỗi khi tải ngạch và bậc lương:', error);
+      toast.error(
+        'Không thể tải thông tin ngạch và bậc lương: ' +
+        (error.response?.data?.message || error.message)
+      );
     }
+
     setErrors({});
     setShowPassword(false);
     setShowModal(true);
@@ -323,11 +361,14 @@ const EmployeesPage = () => {
     setBacLuongs([]);
   };
 
-  const handleNgachChange = e => {
+  const handleNgachChange = async e => {
     const ngachId = e.target.value;
-    setFormData({ ...formData, NGACH_ID: ngachId, BAC_ID: '' });
-    if (ngachId) fetchBacLuongs(ngachId);
-    else setBacLuongs([]);
+    setFormData(prev => ({ ...prev, NGACH_ID: ngachId, BAC_ID: '' }));
+    if (ngachId) {
+      await fetchBacLuongs(ngachId); // Gọi API để lấy danh sách bậc lương khi ngạch thay đổi
+    } else {
+      setBacLuongs([]);
+    }
   };
 
   const handleCloseModal = () => {
@@ -638,7 +679,7 @@ const EmployeesPage = () => {
                       setFormData({ ...formData, BAC_ID: e.target.value })
                     }
                     isInvalid={!!errors.BAC_ID}
-                    disabled={!formData.NGACH_ID}
+                    disabled={!formData.NGACH_ID} // Vô hiệu hóa nếu chưa chọn ngạch
                   >
                     <option value="">Chọn bậc lương</option>
                     {bacLuongs.map(bac => (

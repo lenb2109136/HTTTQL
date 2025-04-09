@@ -14,7 +14,7 @@ const Header = () => {
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const userName = localStorage.getItem('employeeName') || 'Nguyễn Văn A'; // Dữ liệu mẫu
+  const userName = localStorage.getItem('employeeName') || 'Admin'; // Dữ liệu mẫu
 
   useEffect(() => {
     const updateTime = () => {

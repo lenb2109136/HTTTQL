@@ -18,11 +18,16 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const API_URL = 'http://localhost:8080/api';
 
-  // Check if user is already logged in
+  // Không ràng buộc gì nếu đã đăng nhập
   useEffect(() => {
     const employee = localStorage.getItem('employee');
     if (employee) {
-      navigate('/userhome', { replace: true });
+      const parsedEmployee = JSON.parse(employee);
+      if (parsedEmployee.email === 'admin@gmail.com') {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/userhome', { replace: true });
+      }
     }
   }, [navigate]);
 
@@ -74,6 +79,7 @@ const LoginPage = () => {
         const employeeData = {
           NV_ID: response.data.NV_ID,
           NV_HOTEN: response.data.NV_HOTEN || 'Người dùng',
+          email: formData.identifier, // Lưu email để kiểm tra
           avatar:
             response.data.avatar ||
             'https://cdn-icons-png.flaticon.com/512/219/219986.png',
@@ -88,7 +94,12 @@ const LoginPage = () => {
         // Set login success flag for index page
         localStorage.setItem('loginSuccess', 'true');
 
-        navigate('/userhome', { replace: true });
+        // Chuyển hướng dựa trên email
+        if (formData.identifier === 'admin@gmail.com') {
+          navigate('/dashboard', { replace: true });
+        } else {
+          navigate('/userhome', { replace: true });
+        }
       } else {
         setErrors({ general: 'Email hoặc mật khẩu không đúng' });
       }
@@ -108,7 +119,6 @@ const LoginPage = () => {
       alert('Vui lòng nhập email để đặt lại mật khẩu.');
       return;
     }
-    // Mock API call for password reset
     console.log('Gửi yêu cầu đặt lại mật khẩu cho:', resetEmail);
     alert(`Yêu cầu đặt lại mật khẩu đã được gửi đến ${resetEmail}`);
     setResetEmail('');
@@ -228,37 +238,6 @@ const LoginPage = () => {
           </Form>
         </Modal.Body>
       </Modal>
-    </div>
-  );
-};
-
-// Sample Index Page Component (to show success message)
-export const IndexPage = () => {
-  const [showSuccess, setShowSuccess] = useState(false);
-
-  useEffect(() => {
-    const loginSuccess = localStorage.getItem('loginSuccess');
-    if (loginSuccess) {
-      setShowSuccess(true);
-      // Clear the flag after showing the message
-      localStorage.removeItem('loginSuccess');
-      // Hide message after 3 seconds
-      const timer = setTimeout(() => setShowSuccess(false), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  return (
-    <div className="index-page">
-      <Container>
-        {showSuccess && (
-          <Alert variant="success" className="mt-3">
-            Đã đăng nhập thành công!
-          </Alert>
-        )}
-        <h1>Chào mừng đến với trang chủ</h1>
-        {/* Rest of your index page content */}
-      </Container>
     </div>
   );
 };
