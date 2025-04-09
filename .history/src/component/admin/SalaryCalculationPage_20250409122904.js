@@ -18,15 +18,6 @@ import {
 } from 'react-bootstrap';
 import { FiPlus } from 'react-icons/fi';
 import axios from 'axios';
-
-// Hàm định dạng số thành tiền tệ VNĐ
-const formatCurrency = number => {
-  return (
-    number?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) ||
-    '0 VNĐ'
-  );
-};
-
 function convertDatetime(dateStr) {
   const date = new Date(dateStr);
   const day = String(date.getDate()).padStart(2, '0');
@@ -38,7 +29,6 @@ function convertDatetime(dateStr) {
 
   return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
 }
-
 const EmployeesPage = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -60,9 +50,9 @@ const EmployeesPage = () => {
   const dongduocchon = useRef({});
   const [dsphongBan, setdsPhongBan] = useState([]);
   const [dsnghachLuong, setdsnghachLuong] = useState([]);
-
   const handleDownload = () => {
     const url = `http://localhost:8080/getexcel/getexcel?nvid=${0}&nbd=${ngayBatDau}&nkt=${ngayKetThuc}&thang=${selectedMonth}&nam=${selectedYear}`;
+
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', '');
@@ -70,7 +60,6 @@ const EmployeesPage = () => {
     link.click();
     document.body.removeChild(link);
   };
-
   useEffect(() => {
     axios
       .get(
@@ -104,6 +93,7 @@ const EmployeesPage = () => {
   }, []);
 
   const [showModal, setShowModal] = useState(false);
+
   const handleModalClose = () => setShowModal(false);
   const handleModalOpen = () => setShowModal(true);
 
@@ -171,6 +161,22 @@ const EmployeesPage = () => {
             )}
           </Select>
         </FormControl>
+
+        {/* <FormControl sx={{ minWidth: 200 }}>
+                    <InputLabel id="nghach-luong-label">Chọn nghạch lương</InputLabel>
+                    <Select labelId="nghach-luong-label" id="nghach-luong-select" value={nghachLuong} onChange={handlenghachLuongChange}>
+                        {dsnghachLuong.length > 0 ? (
+                            dsnghachLuong?.map((data) => (
+                                <MenuItem key={"nl" + data.ngach_ID} value={String(data.ngach_ID)}>{data.ngach_TEN}</MenuItem>
+                            ))
+                        ) : (
+                            <MenuItem disabled>Không có dữ liệu</MenuItem>
+                        )}
+                    </Select>
+                </FormControl> */}
+
+        {/* <TextField type="date" label="Ngày bắt đầu" value={ngayBatDau} onChange={(e) => setNgayBatDau(e.target.value)} />
+                <TextField type="date" label="Ngày kết thúc" value={ngayKetThuc} onChange={(e) => setNgayKetThuc(e.target.value)} /> */}
       </Box>
 
       <Row className="mb-3">
@@ -229,7 +235,9 @@ const EmployeesPage = () => {
                   .post(
                     'http://localhost:8080/getphieuluongpdf/getphieuluongpdf',
                     data,
-                    { responseType: 'blob' }
+                    {
+                      responseType: 'blob',
+                    }
                   )
                   .then(response => {
                     const url = window.URL.createObjectURL(
@@ -252,10 +260,14 @@ const EmployeesPage = () => {
           <Button
             style={{ marginLeft: '30px' }}
             variant="primary"
-            onClick={handleModalOpen5}
+            onClick={() => {
+              handleModalOpen5();
+            }}
           >
             <FiPlus /> Gửi Thông tin lương đến nhân viên
           </Button>
+          <a id="myLink" download></a>
+
           <Button
             style={{ marginLeft: '30px', marginTop: '20px' }}
             variant="primary"
@@ -284,13 +296,13 @@ const EmployeesPage = () => {
           {dsluong?.map((emp, index) => (
             <tr key={emp.id}>
               <td>{index + 1}</td>
-              <td>{emp.thongtinnhanvien.NV_HOTEN}</td>
-              <td>{formatCurrency(emp.luongcoban)}</td>
-              <td>{formatCurrency(emp.luongtangca)}</td>
-              <td>{formatCurrency(emp.tongkhautru)}</td>
-              <td>{formatCurrency(emp.tongthunhap)}</td>
-              <td>{formatCurrency(emp.tongungluong)}</td>
-              <td>{formatCurrency(emp.luongnhan)}</td>
+              <td>{emp.thongtinnhanvien.nv_HOTEN}</td>
+              <td>{emp.luongcoban}</td>
+              <td>{emp.luongtangca}</td>
+              <td>{emp.tongkhautru}</td>
+              <td>{emp.tongthunhap}</td>
+              <td>{emp.tongungluong}</td>
+              <td>{emp.luongnhan}</td>
               <td>
                 <Button
                   variant="warning"
@@ -318,7 +330,7 @@ const EmployeesPage = () => {
           }}
         >
           <h3 style={{ textAlign: 'center' }}>Phiếu Lương</h3>
-          <hr />
+          <hr></hr>
           <div style={{ display: 'flex' }}>
             <div style={{ width: '100%' }}>
               <p style={{ textAlign: 'center' }}>
@@ -329,7 +341,7 @@ const EmployeesPage = () => {
           <div style={{ display: 'flex' }}>
             <div style={{ width: '50%' }}>
               <p style={{ textAlign: 'center' }}>Thông tin nhân viên</p>
-              <hr />
+              <hr></hr>
               <p style={{ textAlign: 'center' }}>
                 Tên nhân viên:{' '}
                 {dongduocchon.current?.thongtinnhanvien?.nv_HOTEN}
@@ -344,37 +356,34 @@ const EmployeesPage = () => {
                   : 'Nữ'}
               </p>
               <p style={{ textAlign: 'center' }}>
-                Email: {dongduocchon.current?.thongtinnhanvien?.nv_EMAIL}
+                email: {dongduocchon.current?.thongtinnhanvien?.nv_EMAIL}
               </p>
             </div>
             <div style={{ width: '50%' }}>
               <p style={{ textAlign: 'center' }}>Thông tin lương cơ bản</p>
-              <hr />
+              <hr></hr>
               <p style={{ textAlign: 'center' }}>
-                Lương cơ sở: {formatCurrency(dongduocchon.current?.luongcoban)}
+                Lương cơ sở: {dongduocchon.current?.luongcoban}
               </p>
               <p style={{ textAlign: 'center' }}>
-                Lương tăng ca:{' '}
-                {formatCurrency(dongduocchon.current?.luongtangca)}
+                Lương tăng ca: {dongduocchon.current?.luongtangca}
               </p>
               <p style={{ textAlign: 'center' }}>
-                Khoản khấu trừ:{' '}
-                {formatCurrency(dongduocchon.current?.tongkhautru)}
+                Khoản khấu trừ: {dongduocchon.current?.tongkhautru}
               </p>
               <p style={{ textAlign: 'center' }}>
-                Lương thực nhận:{' '}
-                {formatCurrency(dongduocchon.current?.luongnhan)}
+                Lương thực nhận: {dongduocchon.current?.luongnhan}
               </p>
             </div>
           </div>
           <h5 style={{ textAlign: 'center' }}>Khoản khấu trừ</h5>
-          <hr />
+          <hr></hr>
           <Table striped bordered hover>
             <thead>
               <tr>
                 <th>Tên khoản khấu trừ</th>
                 <th>Thời điểm lập</th>
-                <th>Số tiền khấu trừ</th>
+                <th>Tên Số tiền khấu trừ</th>
               </tr>
             </thead>
             <tbody>
@@ -382,7 +391,7 @@ const EmployeesPage = () => {
                 <tr key={emp.id}>
                   <td>{emp?.khautru?.kt_DIENGIAI}</td>
                   <td>{emp?.tienung}</td>
-                  <td>{formatCurrency(emp?.khautru?.kt_SOTIEN)}</td>
+                  <td>{emp?.khautru?.kt_SOTIEN}</td>
                 </tr>
               ))}
             </tbody>
@@ -399,7 +408,7 @@ const EmployeesPage = () => {
               {dongduocchon.current?.danhsachungluong?.map((emp, index) => (
                 <tr key={emp.ul_ID}>
                   <td>{convertDatetime(emp?.ul_NGAYUL)}</td>
-                  <td>{formatCurrency(emp?.ul_TIEN)}</td>
+                  <td>{emp?.ul_TIEN}</td>
                 </tr>
               ))}
             </tbody>
@@ -411,7 +420,9 @@ const EmployeesPage = () => {
               .post(
                 'http://localhost:8080/getphieuluongpdf/getphieuluongpdf',
                 dongduocchon.current,
-                { responseType: 'blob' }
+                {
+                  responseType: 'blob',
+                }
               )
               .then(response => {
                 const url = window.URL.createObjectURL(
@@ -439,7 +450,7 @@ const EmployeesPage = () => {
       <Modal show={showModal5} onHide={handleModalClose5} centered size="lg">
         <Modal.Body style={{ width: '80%', height: '90%', margin: '0 auto' }}>
           <h3 style={{ textAlign: 'center' }}>Thiết lập thông tin gửi lương</h3>
-          <hr />
+          <hr></hr>
           <TextField
             fullWidth
             id="tieude"
