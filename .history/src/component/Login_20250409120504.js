@@ -18,6 +18,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const API_URL = 'http://localhost:8080/api';
 
+  // Không ràng buộc gì nếu đã đăng nhập
   useEffect(() => {
     const employee = localStorage.getItem('employee');
     if (employee) {
@@ -60,26 +61,6 @@ const LoginPage = () => {
 
     setIsLoading(true);
 
-    // Kiểm tra nếu là admin@gmail.com thì chuyển hướng ngay
-    if (formData.identifier === 'admin@gmail.com') {
-      const employeeData = {
-        NV_ID: 'admin', // Giá trị mặc định cho admin
-        NV_HOTEN: 'Admin', // Tên mặc định
-        email: formData.identifier,
-        avatar: 'https://cdn-icons-png.flaticon.com/512/219/219986.png',
-      };
-
-      if (!formData.rememberMe) {
-        localStorage.setItem('employee', JSON.stringify(employeeData));
-        localStorage.setItem('loginSuccess', 'true');
-      }
-
-      navigate('/dashboard', { replace: true });
-      setIsLoading(false);
-      return; // Thoát khỏi hàm để không gọi API
-    }
-
-    // Nếu không phải admin, tiếp tục gọi API
     try {
       const response = await axios.post(
         `${API_URL}/auth/login`,
@@ -104,12 +85,18 @@ const LoginPage = () => {
             'https://cdn-icons-png.flaticon.com/512/219/219986.png',
         };
 
+        // Chỉ lưu vào localStorage nếu "Ghi nhớ đăng nhập" KHÔNG được chọn
         if (!formData.rememberMe) {
           localStorage.setItem('employee', JSON.stringify(employeeData));
           localStorage.setItem('loginSuccess', 'true');
         }
 
-        navigate('/userhome', { replace: true });
+        // Chuyển hướng dựa trên email
+        if (formData.identifier === 'admin@gmail.com') {
+          navigate('/dashboard', { replace: true });
+        } else {
+          navigate('/userhome', { replace: true });
+        }
       } else {
         setErrors({ general: 'Email hoặc mật khẩu không đúng' });
       }
@@ -221,6 +208,7 @@ const LoginPage = () => {
         </Card>
       </Container>
 
+      {/* Password Reset Modal */}
       <Modal
         show={showResetModal}
         onHide={() => setShowResetModal(false)}

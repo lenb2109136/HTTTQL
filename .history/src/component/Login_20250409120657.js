@@ -18,6 +18,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const API_URL = 'http://localhost:8080/api';
 
+  // Không ràng buộc gì nếu đã đăng nhập
   useEffect(() => {
     const employee = localStorage.getItem('employee');
     if (employee) {
@@ -60,26 +61,6 @@ const LoginPage = () => {
 
     setIsLoading(true);
 
-    // Kiểm tra nếu là admin@gmail.com thì chuyển hướng ngay
-    if (formData.identifier === 'admin@gmail.com') {
-      const employeeData = {
-        NV_ID: 'admin', // Giá trị mặc định cho admin
-        NV_HOTEN: 'Admin', // Tên mặc định
-        email: formData.identifier,
-        avatar: 'https://cdn-icons-png.flaticon.com/512/219/219986.png',
-      };
-
-      if (!formData.rememberMe) {
-        localStorage.setItem('employee', JSON.stringify(employeeData));
-        localStorage.setItem('loginSuccess', 'true');
-      }
-
-      navigate('/dashboard', { replace: true });
-      setIsLoading(false);
-      return; // Thoát khỏi hàm để không gọi API
-    }
-
-    // Nếu không phải admin, tiếp tục gọi API
     try {
       const response = await axios.post(
         `${API_URL}/auth/login`,
@@ -98,18 +79,26 @@ const LoginPage = () => {
         const employeeData = {
           NV_ID: response.data.NV_ID,
           NV_HOTEN: response.data.NV_HOTEN || 'Người dùng',
-          email: formData.identifier,
+          email: formData.identifier, // Lưu email để kiểm tra
           avatar:
             response.data.avatar ||
             'https://cdn-icons-png.flaticon.com/512/219/219986.png',
         };
 
-        if (!formData.rememberMe) {
-          localStorage.setItem('employee', JSON.stringify(employeeData));
-          localStorage.setItem('loginSuccess', 'true');
+        // Store login data
+        localStorage.setItem('employee', JSON.stringify(employeeData));
+        if (formData.rememberMe) {
+          localStorage.setItem('rememberMe', 'true');
         }
 
-        navigate('/userhome', { replace: true });
+        // Set login success flag for index page
+        localStorage.setItem('loginSuccess', 'true');
+// Chuyển hướng dựa trên email
+        if (formData.identifier === 'admin@gmail.com') {
+          navigate('/dashboard', { replace: true });
+        } else {
+          navigate('/userhome', { replace: true });
+        }
       } else {
         setErrors({ general: 'Email hoặc mật khẩu không đúng' });
       }
@@ -184,71 +173,3 @@ const LoginPage = () => {
                     className="custom-input"
                     autoComplete="current-password"
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.password}
-                  </Form.Control.Feedback>
-                </div>
-              </Form.Group>
-
-              <Form.Group className="mb-4 d-flex justify-content-between align-items-center">
-                <Form.Check
-                  type="checkbox"
-                  label="Ghi nhớ đăng nhập"
-                  name="rememberMe"
-                  checked={formData.rememberMe}
-                  onChange={handleInputChange}
-                />
-                <a
-                  href="#"
-                  className="forgot-password"
-                  onClick={() => setShowResetModal(true)}
-                >
-                  Quên mật khẩu?
-                </a>
-              </Form.Group>
-
-              <Button
-                type="submit"
-                className="w-100 login-button"
-                disabled={isLoading}
-              >
-                <span className="login-button-text">
-                  {isLoading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
-                </span>
-              </Button>
-            </Form>
-          </Card.Body>
-        </Card>
-      </Container>
-
-      <Modal
-        show={showResetModal}
-        onHide={() => setShowResetModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Đặt lại mật khẩu</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleResetPassword}>
-            <Form.Group className="mb-3" controlId="formResetEmail">
-              <Form.Label>Nhập email của bạn</Form.Label>
-              <Form.Control
-                type="email"
-                placeholder="Nhập email"
-                value={resetEmail}
-                onChange={e => setResetEmail(e.target.value)}
-                autoComplete="email"
-              />
-            </Form.Group>
-            <Button variant="primary" type="submit" className="w-100">
-              Gửi yêu cầu
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
-    </div>
-  );
-};
-
-export default LoginPage;
