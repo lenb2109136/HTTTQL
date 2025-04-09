@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useReducer, useRef } from "react";
 import { Box, InputLabel, MenuItem, Select, FormControl, TextField } from "@mui/material";
-import { Container, Table, Button, Row, Col, Modal } from "react-bootstrap";
+import { Container, Table, Button, Row, Col, Modal, Form } from "react-bootstrap";
 import { FiPlus } from "react-icons/fi";
 import axios from "axios";
 function convertDatetime(dateStr) {
@@ -15,6 +15,8 @@ function convertDatetime(dateStr) {
     return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
 }
 const EmployeesPage = () => {
+    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [phongBan, setPhongBan] = useState("");
     const [nghachLuong, setnghachLuong] = useState("");
     const [ngayBatDau, setNgayBatDau] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]);
@@ -22,17 +24,14 @@ const EmployeesPage = () => {
     const [dsluong, setdsluong] = useState([]);
     const handlePhongBanChange = (event) => {
         setPhongBan(event.target.value)
-        axios.get(`http://localhost:8080/api/nhanvien/getluongnhanvienbybophan?nvid=${event.target.value}&nbd=${ngayBatDau}&nkt=${ngayKetThuc}`)
-        .then((data) => {
-            setdsluong(data.data.data);
-        }).catch(() => { });
+        
     };
     const handlenghachLuongChange = (event) => setnghachLuong(event.target.value);
     const dongduocchon = useRef({})
     const [dsphongBan, setdsPhongBan] = useState([]);
     const [dsnghachLuong, setdsnghachLuong] = useState([]);
     const handleDownload = () => {
-        const url = `http://localhost:8080/getexcel/getexcel?nvid=${0}&nbd=${ngayBatDau}&nkt=${ngayKetThuc}`;
+        const url = `http://localhost:8080/getexcel/getexcel?nvid=${0}&nbd=${ngayBatDau}&nkt=${ngayKetThuc}&thang=${selectedMonth}&nam=${selectedYear}`;
 
         const link = document.createElement('a');
         link.href = url;
@@ -40,13 +39,13 @@ const EmployeesPage = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-      };
+    };
     useEffect(() => {
-        axios.get(`http://localhost:8080/api/nhanvien/getluongnhanvienbybophan?nvid=0&nbd=${ngayBatDau}&nkt=${ngayKetThuc}`)
+        axios.get(`http://localhost:8080/api/nhanvien/getluongnhanvienbybophan?nvid=0&nbd=${ngayBatDau}&nkt=${ngayKetThuc}&thang=${selectedMonth}&nam=${selectedYear}`)
             .then((data) => {
                 setdsluong(data.data.data);
             }).catch(() => { });
-    }, [ngayBatDau, ngayKetThuc])
+    }, [ngayBatDau, ngayKetThuc,selectedMonth,selectedYear])
 
     useEffect(() => {
         axios.get("http://localhost:8080/api/phongban/getPhongBan")
@@ -77,44 +76,52 @@ const EmployeesPage = () => {
             <h1 className="text-center my-4">Quản Lý Lương Nhân Sự</h1>
 
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', marginBottom: 3 }}>
-            <FormControl sx={{ minWidth: 200 }}>
-  <InputLabel id="phong-ban-label">Chọn phòng ban</InputLabel>
-  <Select
-    labelId="phong-ban-label"
-    id="phong-ban-select"
-    value={phongBan}
-    onChange={(e)=>{
-        handlePhongBanChange(e)
-    }
-    }
-    displayEmpty
-    MenuProps={{
-      PaperProps: {
-        style: {
-          maxHeight: 200,
-          overflowY: "auto",
-          zIndex: 1300,
-          backgroundColor: 'white',
-          color: 'black',
-        },
-      },
-    }}
-  >
-    {dsphongBan.length > 0 ? (
-      dsphongBan.map((data) => (
-        <MenuItem
-          key={data.pb_ID+"pb"}
-          value={String(data.pb_ID)}
-          sx={{ color: 'black' }}
-        >
-          {data.PB_TEN}
-        </MenuItem>
-      ))
-    ) : (
-      <MenuItem disabled>Không có dữ liệu</MenuItem>
-    )}
-  </Select>
-</FormControl>
+                <FormControl sx={{ minWidth: 200 }}>
+                    <InputLabel id="phong-ban-label">Chọn phòng ban</InputLabel>
+                    <Select
+                        labelId="phong-ban-label"
+                        id="phong-ban-select"
+                        value={phongBan}
+                        onChange={(e) => {
+                            handlePhongBanChange(e)
+                        }
+                        }
+                        displayEmpty
+                        MenuProps={{
+                            PaperProps: {
+                                style: {
+                                    maxHeight: 200,
+                                    overflowY: "auto",
+                                    zIndex: 1300,
+                                    backgroundColor: 'white',
+                                    color: 'black',
+                                },
+                            },
+                        }}
+                    >
+                        {dsphongBan.length > 0 ? (
+                            dsphongBan.map((data) => (
+                                <MenuItem
+                                
+                                onClick={()=>{
+        
+                                    axios.get(`http://localhost:8080/api/nhanvien/getluongnhanvienbybophan?nvid=${data?.PB_ID}&nbd=${ngayBatDau}&nkt=${ngayKetThuc}`)
+                                        .then((data) => {
+                                            setdsluong(data.data.data);
+                                        }).catch(() => { });
+                                }}
+                                    key={data.pb_ID + "pb"}
+                                    value={String(data.pb_ID)}
+                                    sx={{ color: 'black' }}
+                                >
+                                    {data.PB_TEN}
+                                </MenuItem>
+                            ))
+                        ) : (
+                            <MenuItem disabled>Không có dữ liệu</MenuItem>
+                        )}
+                    </Select>
+                </FormControl>
 
 
                 {/* <FormControl sx={{ minWidth: 200 }}>
@@ -130,9 +137,35 @@ const EmployeesPage = () => {
                     </Select>
                 </FormControl> */}
 
-                <TextField type="date" label="Ngày bắt đầu" value={ngayBatDau} onChange={(e) => setNgayBatDau(e.target.value)} />
-                <TextField type="date" label="Ngày kết thúc" value={ngayKetThuc} onChange={(e) => setNgayKetThuc(e.target.value)} />
+                {/* <TextField type="date" label="Ngày bắt đầu" value={ngayBatDau} onChange={(e) => setNgayBatDau(e.target.value)} />
+                <TextField type="date" label="Ngày kết thúc" value={ngayKetThuc} onChange={(e) => setNgayKetThuc(e.target.value)} /> */}
             </Box>
+           
+            <Row className="mb-3">
+                <Col md={3}>
+                    <Form.Select value={selectedMonth} onChange={(e) => {
+                        setSelectedMonth(e.target.value)
+                    }}>
+                        {Array.from({ length: selectedYear == new Date().getFullYear() ? new Date().getMonth() + 1 : 12 }, (_, i) => (
+                            <option key={i + 1} value={i + 1}>
+                                Tháng {i + 1}
+                            </option>
+                        ))}
+                    </Form.Select>
+                </Col>
+                <Col md={3}>
+                    <Form.Select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))}>
+                        {Array.from({ length: new Date().getFullYear() - 2020 + 1 }, (_, i) => {
+                            const year = 2020 + i;
+                            return (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            );
+                        })}
+                    </Form.Select>
+                </Col>
+            </Row>
 
             <Row className="mb-3 d-flex justify-content-between align-items-center">
                 <Col>
@@ -305,28 +338,28 @@ const EmployeesPage = () => {
                     <h3 style={{ textAlign: "center" }}>Thiết lập thông tin gửi lương</h3>
                     <hr></hr>
                     <TextField
-                    fullWidth
-                    id="tieude"
-                    label="Tiêu đề"
-                    variant="outlined"
-                    sx={{ marginBottom: 2 }}
-                />
-                <TextField
-                    fullWidth
-                    id="noidung"
-                    label="Nội dung"
-                    variant="outlined"
-                    multiline
-                    rows={3}
+                        fullWidth
+                        id="tieude"
+                        label="Tiêu đề"
+                        variant="outlined"
+                        sx={{ marginBottom: 2 }}
+                    />
+                    <TextField
+                        fullWidth
+                        id="noidung"
+                        label="Nội dung"
+                        variant="outlined"
+                        multiline
+                        rows={3}
 
-                    sx={{ marginBottom: 2 }}
-                />
+                        sx={{ marginBottom: 2 }}
+                    />
 
                 </Modal.Body>
-                <Button style={{backgroundColor:"#0d6efd",color:"white"}} onClick={() => {
+                <Button style={{ backgroundColor: "#0d6efd", color: "white" }} onClick={() => {
                     dsluong.forEach((f) => {
                         console.log(f)
-                        console.log("EMAIL NHÂN VIÊN LÀ: "+f.thongtinnhanvien.NV_EMAIL)
+                        console.log("EMAIL NHÂN VIÊN LÀ: " + f.thongtinnhanvien.NV_EMAIL)
                         let form = new FormData()
                         form.append("email", f.thongtinnhanvien.NV_EMAIL)
                         form.append("tieude", document.getElementById("tieude").value)
